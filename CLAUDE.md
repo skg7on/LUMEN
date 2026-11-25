@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository status
 
-This checkout is **design-only at present**: there is no `src/`, `CMakeLists.txt`, build system, test suite, CI configuration, or config parser. It contains the architecture design and roadmap in `docs/init-draft/`, proposed phase specifications in `docs/architecture/`, implementation plans in `docs/superpowers/plans/`, proposed decisions in `docs/adr/`, project guidance, `README.md`, and the MIT `LICENSE`.
+This checkout is **design-only at present**: there is no `src/`, `CMakeLists.txt`, build system, test suite, CI configuration, or config parser. It contains the architecture design and roadmap in `docs/init-draft/`, proposed phase specifications in `docs/architecture/`, implementation plans in `docs/superpowers/plans/`, proposed decisions in `docs/adr/`, project guidance, `README.md`, and the Apache 2.0 `LICENSE`.
 
 Treat the design documents as proposals, not descriptions of implemented behavior. Verify the tree before referring to a module, command, test, backend, or capability as available.
 
