@@ -1,6 +1,9 @@
 # macOS metadata
 .DS_Store
 
+# Local agent worktrees
+.claude/worktrees/
+
 # Prerequisites
 *.d
 
