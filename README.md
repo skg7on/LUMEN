@@ -1,5 +1,11 @@
 # LUMEN
 
+<p align="center">
+  <img src="assets/brand/lumen-logo-ai-npu.png" alt="LUMEN logo with an AI model inside an NPU chip" width="720">
+</p>
+
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+
 LUMEN is a Lightweight Unified Mesh Engine for NPU.
 
 This repository currently contains proposed designs and plans; the native runtime and build/test system have not been implemented.
