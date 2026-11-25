@@ -9,4 +9,5 @@ This repository currently contains proposed designs and plans; the native runtim
 - [Architecture design](docs/init-draft/LUMEN-Architecture-Design.md)
 - [Implementation roadmap](docs/init-draft/LUMEN-Implementation-Roadmap.md)
 - [Phase design specifications from the MVP through industrial qualification](docs/architecture/README.md)
+- [Implementation plans for each phase](docs/superpowers/plans/README.md)
 - [Proposed architecture decisions](docs/adr/README.md)

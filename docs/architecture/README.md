@@ -12,6 +12,8 @@ The checkout contains design documents only. Interfaces, configuration fields, a
 
 Read the shared contracts first, then the phase being planned and its prerequisites.
 
+The [phase implementation plans](../superpowers/plans/README.md) translate these specifications into ordered tasks, exact interface/file contracts, test cases, and release evidence. They remain proposed and unexecuted.
+
 | Specification | Release and scope | Entry dependency |
 |---|---|---|
 | [Shared runtime contracts](Shared-Runtime-Contracts.md) | Ownership, token cursors, ABI, resources, completion, versioning | P0 contracts and CPU/mock foundations |
