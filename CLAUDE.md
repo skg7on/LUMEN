@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository status
 
-This checkout is **design-only at present**: there is no `src/`, `CMakeLists.txt`, build system, test suite, CI configuration, or config parser. The only content is `docs/init-draft/` (the architecture design and roadmap, both marked `Version: 0.1 | Status: Proposed design/plan`), `.claude/rules/`, a minimal `README.md`, and the MIT `LICENSE`.
+This checkout is **design-only at present**: there is no `src/`, `CMakeLists.txt`, build system, test suite, CI configuration, or config parser. It contains the architecture design and roadmap in `docs/init-draft/`, proposed phase specifications in `docs/architecture/`, proposed decisions in `docs/adr/`, project guidance, `README.md`, and the MIT `LICENSE`.
 
 Treat the design documents as proposals, not descriptions of implemented behavior. Verify the tree before referring to a module, command, test, backend, or capability as available.
 
@@ -49,7 +49,8 @@ Contracts that require reading multiple documents to grasp:
 
 - `docs/init-draft/LUMEN-Architecture-Design.md` — module contracts (§3), runtime loop and scheduling (§4), KV/memory invariants (§5), backend ABI and kernels (§6), model packing (§7), mesh (§8), verification strategy and open decisions (§12).
 - `docs/init-draft/LUMEN-Implementation-Roadmap.md` — phases P0–P6 with exit gates, benchmark methodology, risk register, and the first-four-weeks backlog (LUMEN-001…010). P0 order: build skeleton + C ABI, NPU qualification harness, fixtures + native tensor loader, CPU reference Transformer, `StepPlan` contract, mock async executor.
-- `docs/adr/` does not exist yet. Record decisions about backend ABI, state ownership, KV layout/page size, scheduler policy, distributed authority, model format, and precision there before locking them in. Update the design docs when implementation intentionally departs from them.
+- `docs/architecture/README.md` — phase-specification index for P1–P6, starting with the MVP; `Shared-Runtime-Contracts.md` defines common ownership, execution, resource, and ABI contracts. P0 remains an entry dependency and P5 remains optional for R1.0.
+- `docs/adr/README.md` — proposed decisions about state ownership, backend ABI, KV layout/page size, scheduler policy, model format/precision, and distributed authority. Accept or supersede these with qualification evidence before freezing interfaces or enabling features. Update the design docs when implementation intentionally departs from them.
 
 ## Operative rules
 
