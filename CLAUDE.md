@@ -51,6 +51,7 @@ Contracts that require reading multiple documents to grasp:
 - `docs/init-draft/LUMEN-Implementation-Roadmap.md` — phases P0–P6 with exit gates, benchmark methodology, risk register, and the first-four-weeks backlog (LUMEN-001…010). P0 order: build skeleton + C ABI, NPU qualification harness, fixtures + native tensor loader, CPU reference Transformer, `StepPlan` contract, mock async executor.
 - `docs/architecture/README.md` — phase-specification index for P1–P6, starting with the MVP; `Shared-Runtime-Contracts.md` defines common ownership, execution, resource, and ABI contracts. P0 remains an entry dependency and P5 remains optional for R1.0.
 - `docs/superpowers/plans/README.md` — implementation-plan index for P1–P6, including P0 input contracts, cross-plan interfaces, ordered tasks, test assertions, proposed verification commands, and acceptance evidence. These plans have not been executed.
+- `docs/superpowers/issues/2026-11-25-roadmap-batch.md` — GitHub mapping for P0 foundations, the 53 phase-plan tasks, phase design/acceptance trackers, and the roadmap tracker. GitHub holds live issue status; optional features retain their qualification gates.
 - `docs/adr/README.md` — proposed decisions about state ownership, backend ABI, KV layout/page size, scheduler policy, model format/precision, and distributed authority. Accept or supersede these with qualification evidence before freezing interfaces or enabling features. Update the design docs when implementation intentionally departs from them.
 
 ## Operative rules

@@ -79,3 +79,5 @@ Plans propose exact interfaces and CLI flags for implementation. They do not cla
 ## Execution boundary
 
 This task creates plans only. Before implementing, review the chosen plan and select an execution method. Native execution keeps the related interfaces in one working context; subagent-driven execution adds separate implementer/reviewer contexts for each task. Neither method waives prerequisite or hardware gates. The [ADR register](../../adr/README.md) remains Proposed until its required evidence is accepted.
+
+The [roadmap issue batch](../issues/2026-11-25-roadmap-batch.md) maps these tasks and P0 prerequisites to GitHub work items, dependencies, phase design/acceptance trackers, and release milestones. Use GitHub for live status.
