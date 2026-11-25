@@ -1,20 +1,56 @@
-# Worktree isolation
+# Worktree Isolation Policy
 
-- Make design and implementation edits in an isolated worktree. Detect an existing
-  linked worktree first and reuse it; do not nest worktrees or reset another task's
-  checkout.
-- Prefer a platform-managed worktree when available. Its location and lifecycle
-  belong to the platform; do not move or remove its directory manually.
-- When creating a worktree manually, place it under `.claude/worktrees/` relative
-  to the LUMEN repository root. Verify that directory is ignored before creation.
-  Resolve the root with Git rather than hardcoding a developer's absolute path.
-- Use `codex/<short-description>` for new branches unless the task specifies
-  another convention. Use lowercase kebab-case, for example
-  `codex/project-rules`, `codex/kv-page-leases`, or `codex/backend-abi`.
-- Preserve existing staged, unstaged, and untracked work. Copy only task-relevant
-  inputs into a new checkout and stage explicit paths after reviewing the diff.
-- Verify and commit in the isolated checkout. A request to create a commit does
-  not require opening a PR; follow the requested publication scope.
-- Keep unmerged or unpushed work recoverable. Clean up manually created worktrees
-  only after integration or an explicit discard request, checking for local work
-  first. Use the platform's archive/cleanup action for managed worktrees.
+**Category:** process
+**Enforcement:** hard gate — all writes MUST follow this policy
+
+## Rule
+
+Every design or implementation write MUST happen in an isolated git worktree. The main checkout at the repository root (`/Users/skg7on/Workspace/Projects/LUMEN`) is for read-only inspection only.
+
+## Worktree Location
+
+All worktrees MUST be created under `.claude/worktrees/` in the project root directory.
+
+## Branch Naming Convention
+
+All worktree branches MUST follow the pattern `category/short-description` using kebab-case.
+
+**Categories:**
+- `docs` — documentation, design specs, plans
+- `feat` — feature implementation
+- `fix` — bug fixes
+- `refactor` — code restructuring without functional change
+- `exp` — experiments, spikes, prototypes
+
+**Good Examples:**
+- `feat/kvcache-optimization`
+- `docs/architecture-overview`
+- `fix/http-response-error`
+- `refactor/extract-shared-tiling-utils`
+- `exp/continuos-batching-algorithm`
+
+**Bad Examples (DO NOT use):**
+- `worktree-feat+m1-scalar-pipeline` — ❌ `worktree-` prefix and `+` separator. Use `feat/m1-scalar-pipeline`
+- `worktree-fix+cmake-native-target-libs` — ❌ same pattern. Use `fix/cmake-native-target-libs`
+- `worktree-docs+m4-parallel-design` — ❌ same pattern. Use `docs/m4-parallel-design`
+
+### Claude Code produces the bad pattern automatically
+
+The `EnterWorktree` tool generates exactly the pattern above. `EnterWorktree(name: "docs/foo-bar")` creates
+branch `worktree-docs+foo-bar` in `.claude/worktrees/docs+foo-bar`. Rename the branch as your first command,
+before any commit:
+
+```bash
+git branch -m worktree-docs+foo-bar docs/foo-bar
+```
+
+Leave the directory name alone — this policy constrains branch naming only, and moving the directory
+mid-session breaks the session's working directory.
+
+## Lifecycle
+
+1. Create worktree + branch before making any changes
+2. Commit work incrementally within the worktree
+3. Push branch and open PR for review
+4. After merge, delete the worktree and branch
+5. If abandoned, delete the worktree and branch immediately
