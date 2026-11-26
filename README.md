@@ -8,7 +8,10 @@
 
 LUMEN is a Lightweight Unified Mesh Engine for NPU.
 
-This repository currently contains proposed designs and plans; the native runtime and build/test system have not been implemented.
+The P0 native foundation is implemented: a CMake/Ninja/CTest host build with a
+versioned C backend ABI and CPU/mock adapters. The engine, scheduler, KV
+manager, model packer, and serving tools remain proposed designs. See
+[Building and testing](docs/build.md).
 
 ## Design documentation
 

@@ -1,0 +1,126 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "host-debug",
+      "displayName": "Host Debug (CPU/mock, tests on)",
+      "description": "Native host configure preset for CPU/mock adapters and CTest.",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/host-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "LUMEN_BUILD_TESTS": "ON",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "host-release",
+      "displayName": "Host Release",
+      "description": "Native host release configure preset; tests stay enabled.",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/host-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "LUMEN_BUILD_TESTS": "ON",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "host-sanitize",
+      "displayName": "Host sanitizers (ASan + UBSan, tests on)",
+      "description": "Debug host build with AddressSanitizer and UndefinedBehaviorSanitizer. macOS LeakSanitizer is unsupported; use the Xcode toolchain there if the Homebrew ASan runtime misbehaves.",
+      "inherits": "host-debug",
+      "binaryDir": "${sourceDir}/build/host-sanitize",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "LUMEN_BUILD_TESTS": "ON",
+        "CMAKE_C_FLAGS": "-fsanitize=address,undefined -fno-omit-frame-pointer",
+        "CMAKE_CXX_FLAGS": "-fsanitize=address,undefined -fno-omit-frame-pointer",
+        "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address,undefined"
+      }
+    },
+    {
+      "name": "target-npu",
+      "displayName": "Target NPU cross build (ARM64 Linux)",
+      "description": "Cross-configure for the ARM64 target. Requires aarch64-linux-gnu toolchain on PATH or LUMEN_TARGET_*_COMPILER.",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/target-npu",
+      "toolchainFile": "${sourceDir}/cmake/toolchains/arm64.cmake",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "LUMEN_BUILD_TESTS": "OFF"
+      }
+    },
+    {
+      "name": "target-npu-x86_64",
+      "displayName": "Target cross build (x86-64 Linux)",
+      "description": "Cross-configure for an x86-64 Linux target using cmake/toolchains/x86_64.cmake.",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/target-npu-x86_64",
+      "toolchainFile": "${sourceDir}/cmake/toolchains/x86_64.cmake",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "LUMEN_BUILD_TESTS": "OFF"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "host-debug",
+      "configurePreset": "host-debug"
+    },
+    {
+      "name": "host-release",
+      "configurePreset": "host-release"
+    },
+    {
+      "name": "host-sanitize",
+      "configurePreset": "host-sanitize"
+    },
+    {
+      "name": "target-npu",
+      "configurePreset": "target-npu"
+    },
+    {
+      "name": "target-npu-x86_64",
+      "configurePreset": "target-npu-x86_64"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "host-debug",
+      "configurePreset": "host-debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "host-release",
+      "configurePreset": "host-release",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "host-sanitize",
+      "configurePreset": "host-sanitize",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    }
+  ]
+}

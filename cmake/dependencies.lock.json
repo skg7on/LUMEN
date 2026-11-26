@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "comment": "Pinned dependency and toolchain metadata for the LUMEN P0 native foundation. The CPU and mock backends must build without a vendor NPU SDK.",
+  "policy": {
+    "runtime_dependencies": "none",
+    "shipped_python": "forbidden",
+    "toolchain_resolution": "host system toolchain selected through CMake presets; target builds use cmake/toolchains/*.cmake"
+  },
+  "toolchain": {
+    "cmake_min": "3.25.0",
+    "ninja_min": "1.11",
+    "cxx_standard": "20",
+    "c_standard": "11",
+    "compilers": {
+      "x86_64_linux": "GCC 13 or Clang 17 (C++20, C11)",
+      "arm64_linux": "GCC 13 or Clang 17 (C++20, C11)",
+      "arm64_darwin": "Apple Clang 16 or newer (C++20, C11)"
+    }
+  },
+  "host_targets": {
+    "supported_ci": [
+      "ubuntu-24.04 (x86_64)",
+      "ubuntu-24.04-arm (aarch64)",
+      "macos-14 (arm64)"
+    ],
+    "note": "CTest coverage is host-only in P0; target hardware evidence belongs to the NPU qualification work item."
+  },
+  "dependencies": []
+}

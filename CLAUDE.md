@@ -4,15 +4,28 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository status
 
-This checkout is **design-only at present**: there is no `src/`, `CMakeLists.txt`, build system, test suite, CI configuration, or config parser. It contains the architecture design and roadmap in `docs/init-draft/`, proposed phase specifications in `docs/architecture/`, implementation plans in `docs/superpowers/plans/`, proposed decisions in `docs/adr/`, project guidance, `README.md`, and the Apache 2.0 `LICENSE`.
+This checkout now contains the **P0 native foundation** (LUMEN-001) plus proposed designs. `CMakeLists.txt`, `CMakePresets.json`, `cmake/`, `include/lumen/backend.h`, `src/core/`, `src/model/tensor_view.h`, `src/backend/{cpu,mock}/`, `tests/`, and `.github/workflows/host-ci.yml` implement the native build/test skeleton, checked size/tensor primitives, and the versioned CPU/mock backend C ABI. There is still no engine, scheduler, KV manager, model loader/packer, serving frontend, config parser, or `lumend`/`lumen-*` binary.
 
 Treat the design documents as proposals, not descriptions of implemented behavior. Verify the tree before referring to a module, command, test, backend, or capability as available.
 
 ## Commands
 
-No build, lint, or test commands exist yet. Do not assume `cmake --preset …`, `ctest`, or any `lumen-*` binary works in this checkout. Creating the build/test skeleton is itself the first deliverable (P0.3, below).
+Host configure, build, and test (no vendor NPU SDK required):
 
-When the native build is introduced, the roadmap prescribes:
+```bash
+cmake --preset host-debug
+cmake --build --preset host-debug
+ctest --preset host-debug --output-on-failure --no-tests=error
+```
+
+`host-release` runs the same suite in a release build; `host-sanitize` builds it
+with AddressSanitizer and UndefinedBehaviorSanitizer. `target-npu` and
+`target-npu-x86_64` cross-configure for Linux and build `liblumen` only; they
+require the matching GNU cross toolchain. There is no lint configuration yet.
+Do not assume `lumend`, `lumen-pack`, `lumen-bench`, `lumen-replay`, or
+`lumen-inspect` exist. See `docs/build.md` for the test map and ABI boundary.
+
+The roadmap prescribes for later phases:
 
 - CMake + Ninja with toolchain files under `cmake/toolchains/`; CPU and mock backends must build and run without a vendor NPU SDK.
 - Artifacts: `liblumen` (optional), `lumend`, `lumen-pack`, `lumen-bench`, `lumen-replay`, `lumen-inspect`.

@@ -1,0 +1,90 @@
+name: host-ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  host:
+    name: host (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
+          - ubuntu-24.04-arm
+          - macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Ninja (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Install Ninja (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ninja || true
+
+      - name: Record toolchain
+        run: |
+          cmake --version
+          ninja --version
+          ${CXX:-c++} --version
+
+      - name: Configure
+        run: cmake --preset host-debug -DLUMEN_WARNINGS_AS_ERRORS=ON
+
+      - name: Build
+        run: cmake --build --preset host-debug
+
+      - name: Test
+        run: ctest --preset host-debug --output-on-failure --no-tests=error
+
+  sanitize:
+    name: host-sanitize (ASan + UBSan)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Ninja
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Configure
+        run: cmake --preset host-sanitize -DLUMEN_WARNINGS_AS_ERRORS=ON
+
+      - name: Build
+        run: cmake --build --preset host-sanitize
+
+      - name: Test
+        env:
+          ASAN_OPTIONS: detect_leaks=1
+          UBSAN_OPTIONS: halt_on_error=1
+        run: ctest --preset host-sanitize --output-on-failure --no-tests=error
+
+  target-cross:
+    name: cross-build (ARM64 target)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install cross toolchain and Ninja
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+
+      - name: Record toolchain
+        run: |
+          cmake --version
+          ninja --version
+          aarch64-linux-gnu-g++ --version
+
+      - name: Configure
+        run: cmake --preset target-npu
+
+      - name: Build
+        run: cmake --build --preset target-npu
