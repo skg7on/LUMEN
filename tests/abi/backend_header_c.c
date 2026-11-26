@@ -6,7 +6,7 @@
 #include <stddef.h>
 
 int main(void) {
-  const lumen_backend_api_v1* cpu;
+  const lumen_backend_api_v1 *cpu;
 
   if (LUMEN_BACKEND_ABI_MAJOR != 1u) {
     return 1;

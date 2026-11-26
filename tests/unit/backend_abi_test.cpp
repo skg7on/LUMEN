@@ -9,13 +9,16 @@
 #include "lumen/backend.h"
 
 static_assert(static_cast<int>(lumen::Status::ok) == LUMEN_STATUS_OK);
-static_assert(static_cast<int>(lumen::Status::invalid_input) == LUMEN_STATUS_INVALID_INPUT);
-static_assert(static_cast<int>(lumen::Status::unsupported) == LUMEN_STATUS_UNSUPPORTED);
+static_assert(static_cast<int>(lumen::Status::invalid_input) ==
+              LUMEN_STATUS_INVALID_INPUT);
+static_assert(static_cast<int>(lumen::Status::unsupported) ==
+              LUMEN_STATUS_UNSUPPORTED);
 static_assert(static_cast<int>(lumen::Status::resource_exhausted) ==
               LUMEN_STATUS_RESOURCE_EXHAUSTED);
 static_assert(static_cast<int>(lumen::Status::stale) == LUMEN_STATUS_STALE);
 static_assert(static_cast<int>(lumen::Status::timeout) == LUMEN_STATUS_TIMEOUT);
-static_assert(static_cast<int>(lumen::Status::device_error) == LUMEN_STATUS_DEVICE_ERROR);
+static_assert(static_cast<int>(lumen::Status::device_error) ==
+              LUMEN_STATUS_DEVICE_ERROR);
 static_assert(static_cast<int>(lumen::Status::corrupt) == LUMEN_STATUS_CORRUPT);
 
 namespace {
@@ -24,7 +27,7 @@ lumen_context_t sentinel_context() {
   return reinterpret_cast<lumen_context_t>(static_cast<std::uintptr_t>(0x1));
 }
 
-}  // namespace
+} // namespace
 
 static void status_codes_match_the_internal_vocabulary() {
   CHECK(static_cast<int>(LUMEN_STATUS_OK) == 0);
@@ -38,8 +41,8 @@ static void status_codes_match_the_internal_vocabulary() {
 }
 
 static void valid_tables_pass_validation() {
-  const lumen_backend_api_v1* cpu = lumen_cpu_backend_api();
-  const lumen_backend_api_v1* mock = lumen_mock_backend_api();
+  const lumen_backend_api_v1 *cpu = lumen_cpu_backend_api();
+  const lumen_backend_api_v1 *mock = lumen_mock_backend_api();
   REQUIRE(cpu != nullptr);
   REQUIRE(mock != nullptr);
 

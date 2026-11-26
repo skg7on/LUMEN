@@ -25,7 +25,7 @@
 namespace lumen::backend {
 namespace {
 
-constexpr uint64_t kMaxBufferBytes = 1ull << 30;  // 1 GiB
+constexpr uint64_t kMaxBufferBytes = 1ull << 30; // 1 GiB
 constexpr uint64_t kMaxInflightCommands = 1024;
 constexpr uint32_t kMaxAlignment = 1u << 20;
 
@@ -62,7 +62,7 @@ struct Context : Object {
 struct Device : Object {};
 
 struct Buffer : Object {
-  void* data = nullptr;
+  void *data = nullptr;
   std::uint64_t size = 0;
   std::uint32_t alignment = 0;
   std::uint64_t live_events = 0;
@@ -98,8 +98,8 @@ struct Event : Object {
 };
 
 class Registry {
- public:
-  static Registry& instance() {
+public:
+  static Registry &instance() {
     static Registry registry;
     return registry;
   }
@@ -126,8 +126,9 @@ class Registry {
 
   bool has_live_child(std::uint64_t context_id) {
     std::lock_guard<std::mutex> lock(mutex_);
-    for (const auto& [id, object] : objects_) {
-      if (id != context_id && object->context_id == context_id && !object->retired) {
+    for (const auto &[id, object] : objects_) {
+      if (id != context_id && object->context_id == context_id &&
+          !object->retired) {
         return true;
       }
     }
@@ -136,7 +137,7 @@ class Registry {
 
   bool has_live_device_child(std::uint64_t device_id) {
     std::lock_guard<std::mutex> lock(mutex_);
-    for (const auto& [id, object] : objects_) {
+    for (const auto &[id, object] : objects_) {
       (void)id;
       if (object->device_id == device_id && !object->retired &&
           (object->kind == Kind::buffer || object->kind == Kind::queue ||
@@ -158,7 +159,7 @@ class Registry {
     }
   }
 
- private:
+private:
   std::mutex mutex_;
   std::uint64_t next_id_ = 1;
   std::unordered_map<std::uint64_t, std::shared_ptr<Object>> objects_;
@@ -172,26 +173,26 @@ enum class Lookup {
 
 lumen_status_t lookup_status(Lookup lookup) {
   switch (lookup) {
-    case Lookup::ok:
-      return LUMEN_STATUS_OK;
-    case Lookup::stale:
-      return LUMEN_STATUS_STALE;
-    case Lookup::invalid:
-      return LUMEN_STATUS_INVALID_INPUT;
+  case Lookup::ok:
+    return LUMEN_STATUS_OK;
+  case Lookup::stale:
+    return LUMEN_STATUS_STALE;
+  case Lookup::invalid:
+    return LUMEN_STATUS_INVALID_INPUT;
   }
   return LUMEN_STATUS_INVALID_INPUT;
 }
 
-template <typename T>
-T* to_handle(std::uint64_t id) {
-  return reinterpret_cast<T*>(static_cast<std::uintptr_t>(id));
+template <typename T> T *to_handle(std::uint64_t id) {
+  return reinterpret_cast<T *>(static_cast<std::uintptr_t>(id));
 }
 
-std::uint64_t from_handle(const void* handle) {
+std::uint64_t from_handle(const void *handle) {
   return static_cast<std::uint64_t>(reinterpret_cast<std::uintptr_t>(handle));
 }
 
-Lookup lookup_object(const void* handle, Kind kind, std::shared_ptr<Object>& out) {
+Lookup lookup_object(const void *handle, Kind kind,
+                     std::shared_ptr<Object> &out) {
   if (handle == nullptr) {
     return Lookup::invalid;
   }
@@ -210,7 +211,7 @@ Lookup lookup_object(const void* handle, Kind kind, std::shared_ptr<Object>& out
 }
 
 template <typename T>
-Lookup lookup_typed(const void* handle, Kind kind, std::shared_ptr<T>& out) {
+Lookup lookup_typed(const void *handle, Kind kind, std::shared_ptr<T> &out) {
   std::shared_ptr<Object> object;
   const Lookup result = lookup_object(handle, kind, object);
   if (result == Lookup::ok) {
@@ -247,29 +248,31 @@ lumen_status_t validate_out_record(std::uint32_t struct_size,
   if (struct_size != expected_size) {
     return LUMEN_STATUS_INVALID_INPUT;
   }
-  if (abi_major != LUMEN_BACKEND_ABI_MAJOR || abi_minor > LUMEN_BACKEND_ABI_MINOR) {
+  if (abi_major != LUMEN_BACKEND_ABI_MAJOR ||
+      abi_minor > LUMEN_BACKEND_ABI_MINOR) {
     return LUMEN_STATUS_UNSUPPORTED;
   }
   return LUMEN_STATUS_OK;
 }
 
-void* allocate_bytes(std::uint64_t size, std::uint32_t alignment) {
+void *allocate_bytes(std::uint64_t size, std::uint32_t alignment) {
   if (alignment <= alignof(std::max_align_t)) {
     return ::operator new(static_cast<std::size_t>(size));
   }
   return ::operator new(static_cast<std::size_t>(size),
-                       std::align_val_t{static_cast<std::size_t>(alignment)});
+                        std::align_val_t{static_cast<std::size_t>(alignment)});
 }
 
-void release_bytes(void* data, std::uint32_t alignment) {
+void release_bytes(void *data, std::uint32_t alignment) {
   if (alignment <= alignof(std::max_align_t)) {
     ::operator delete(data);
   } else {
-    ::operator delete(data, std::align_val_t{static_cast<std::size_t>(alignment)});
+    ::operator delete(data,
+                      std::align_val_t{static_cast<std::size_t>(alignment)});
   }
 }
 
-lumen_status_t execute_command(const Event& event) {
+lumen_status_t execute_command(const Event &event) {
   if (event.command_kind == LUMEN_COMMAND_NOP) {
     return LUMEN_STATUS_OK;
   }
@@ -277,7 +280,7 @@ lumen_status_t execute_command(const Event& event) {
   if (!dst || dst->data == nullptr) {
     return LUMEN_STATUS_DEVICE_ERROR;
   }
-  auto* dst_bytes = static_cast<std::byte*>(dst->data) + event.dst_offset;
+  auto *dst_bytes = static_cast<std::byte *>(dst->data) + event.dst_offset;
   if (event.command_kind == LUMEN_COMMAND_FILL) {
     std::memset(dst_bytes, static_cast<int>(event.fill_byte & 0xffu),
                 static_cast<std::size_t>(event.length));
@@ -287,12 +290,13 @@ lumen_status_t execute_command(const Event& event) {
   if (!src || src->data == nullptr) {
     return LUMEN_STATUS_DEVICE_ERROR;
   }
-  const auto* src_bytes = static_cast<const std::byte*>(src->data) + event.src_offset;
+  const auto *src_bytes =
+      static_cast<const std::byte *>(src->data) + event.src_offset;
   std::memmove(dst_bytes, src_bytes, static_cast<std::size_t>(event.length));
   return LUMEN_STATUS_OK;
 }
 
-void drop_buffer_refs(Event& event) {
+void drop_buffer_refs(Event &event) {
   for (const std::uint64_t id : event.buffer_refs) {
     if (auto buffer = find_live<Buffer>(id, Kind::buffer)) {
       if (buffer->live_events > 0) {
@@ -303,9 +307,9 @@ void drop_buffer_refs(Event& event) {
   event.buffer_refs.clear();
 }
 
-void complete_event(Event& event, lumen_status_t result) {
-  event.state =
-      result == LUMEN_STATUS_OK ? CompletionState::complete : CompletionState::failed;
+void complete_event(Event &event, lumen_status_t result) {
+  event.state = result == LUMEN_STATUS_OK ? CompletionState::complete
+                                          : CompletionState::failed;
   event.command_status = result;
   drop_buffer_refs(event);
   if (event.queued) {
@@ -318,7 +322,7 @@ void complete_event(Event& event, lumen_status_t result) {
   }
 }
 
-lumen_status_t add_buffer_ref(Event& event, std::uint64_t buffer_id) {
+lumen_status_t add_buffer_ref(Event &event, std::uint64_t buffer_id) {
   if (buffer_id == 0) {
     return LUMEN_STATUS_OK;
   }
@@ -334,33 +338,34 @@ lumen_status_t add_buffer_ref(Event& event, std::uint64_t buffer_id) {
   ++buffer->live_events;
   try {
     event.buffer_refs.push_back(buffer_id);
-  } catch (const std::bad_alloc&) {
+  } catch (const std::bad_alloc &) {
     --buffer->live_events;
     return LUMEN_STATUS_RESOURCE_EXHAUSTED;
   }
   return LUMEN_STATUS_OK;
 }
 
-void fill_event_state(const Event& event, lumen_event_state_v1& out) {
-  out.status = event.state == CompletionState::pending
-                   ? LUMEN_EVENT_PENDING
-                   : (event.state == CompletionState::complete ? LUMEN_EVENT_COMPLETE
-                                                               : LUMEN_EVENT_FAILED);
+void fill_event_state(const Event &event, lumen_event_state_v1 &out) {
+  out.status =
+      event.state == CompletionState::pending
+          ? LUMEN_EVENT_PENDING
+          : (event.state == CompletionState::complete ? LUMEN_EVENT_COMPLETE
+                                                      : LUMEN_EVENT_FAILED);
   out.command_status = static_cast<std::uint32_t>(event.command_status);
   out.flags = 0;
   out.sequence = event.sequence;
 }
 
-}  // namespace
+} // namespace
 
-lumen_status_t open(Mode mode, lumen_context_t* out_context) {
+lumen_status_t open(Mode mode, lumen_context_t *out_context) {
   if (out_context == nullptr) {
     return LUMEN_STATUS_INVALID_INPUT;
   }
   std::shared_ptr<Context> context;
   try {
     context = std::make_shared<Context>();
-  } catch (const std::bad_alloc&) {
+  } catch (const std::bad_alloc &) {
     return LUMEN_STATUS_RESOURCE_EXHAUSTED;
   }
   context->kind = Kind::context;
@@ -401,7 +406,7 @@ lumen_status_t reset_context(lumen_context_t handle) {
   return LUMEN_STATUS_OK;
 }
 
-lumen_status_t open_device(lumen_context_t handle, lumen_device_t* out_device) {
+lumen_status_t open_device(lumen_context_t handle, lumen_device_t *out_device) {
   if (out_device == nullptr) {
     return LUMEN_STATUS_INVALID_INPUT;
   }
@@ -413,7 +418,7 @@ lumen_status_t open_device(lumen_context_t handle, lumen_device_t* out_device) {
   std::shared_ptr<Device> device;
   try {
     device = std::make_shared<Device>();
-  } catch (const std::bad_alloc&) {
+  } catch (const std::bad_alloc &) {
     return LUMEN_STATUS_RESOURCE_EXHAUSTED;
   }
   device->kind = Kind::device;
@@ -441,7 +446,7 @@ lumen_status_t close_device(lumen_device_t handle) {
 }
 
 lumen_status_t device_capabilities(lumen_device_t handle,
-                                   lumen_capabilities_v1* out_capabilities) {
+                                   lumen_capabilities_v1 *out_capabilities) {
   std::shared_ptr<Device> device;
   const Lookup found = lookup_typed(handle, Kind::device, device);
   if (found != Lookup::ok) {
@@ -477,8 +482,8 @@ lumen_status_t device_capabilities(lumen_device_t handle,
 }
 
 lumen_status_t create_buffer(lumen_device_t handle,
-                             const lumen_buffer_desc_v1* desc,
-                             lumen_buffer_t* out_buffer) {
+                             const lumen_buffer_desc_v1 *desc,
+                             lumen_buffer_t *out_buffer) {
   std::shared_ptr<Device> device;
   const Lookup found = lookup_typed(handle, Kind::device, device);
   if (found != Lookup::ok) {
@@ -503,17 +508,17 @@ lumen_status_t create_buffer(lumen_device_t handle,
     return LUMEN_STATUS_INVALID_INPUT;
   }
 
-  void* data = nullptr;
+  void *data = nullptr;
   try {
     data = allocate_bytes(desc->size_bytes, desc->alignment);
-  } catch (const std::bad_alloc&) {
+  } catch (const std::bad_alloc &) {
     return LUMEN_STATUS_RESOURCE_EXHAUSTED;
   }
 
   std::shared_ptr<Buffer> buffer;
   try {
     buffer = std::make_shared<Buffer>();
-  } catch (const std::bad_alloc&) {
+  } catch (const std::bad_alloc &) {
     release_bytes(data, desc->alignment);
     return LUMEN_STATUS_RESOURCE_EXHAUSTED;
   }
@@ -549,7 +554,8 @@ lumen_status_t destroy_buffer(lumen_buffer_t handle) {
   return LUMEN_STATUS_OK;
 }
 
-lumen_status_t map_buffer(lumen_buffer_t handle, void** out_data, uint64_t* out_size) {
+lumen_status_t map_buffer(lumen_buffer_t handle, void **out_data,
+                          uint64_t *out_size) {
   std::shared_ptr<Buffer> buffer;
   const Lookup found = lookup_typed(handle, Kind::buffer, buffer);
   if (found != Lookup::ok) {
@@ -573,8 +579,8 @@ lumen_status_t unmap_buffer(lumen_buffer_t handle) {
 }
 
 lumen_status_t create_queue(lumen_device_t handle,
-                            const lumen_queue_desc_v1* desc,
-                            lumen_queue_t* out_queue) {
+                            const lumen_queue_desc_v1 *desc,
+                            lumen_queue_t *out_queue) {
   std::shared_ptr<Device> device;
   const Lookup found = lookup_typed(handle, Kind::device, device);
   if (found != Lookup::ok) {
@@ -595,7 +601,7 @@ lumen_status_t create_queue(lumen_device_t handle,
   std::shared_ptr<Queue> queue;
   try {
     queue = std::make_shared<Queue>();
-  } catch (const std::bad_alloc&) {
+  } catch (const std::bad_alloc &) {
     return LUMEN_STATUS_RESOURCE_EXHAUSTED;
   }
   queue->kind = Kind::queue;
@@ -623,9 +629,8 @@ lumen_status_t destroy_queue(lumen_queue_t handle) {
   return LUMEN_STATUS_OK;
 }
 
-lumen_status_t submit(lumen_queue_t handle,
-                      const lumen_command_v1* command,
-                      lumen_event_t* out_event) {
+lumen_status_t submit(lumen_queue_t handle, const lumen_command_v1 *command,
+                      lumen_event_t *out_event) {
   std::shared_ptr<Queue> queue;
   const Lookup found = lookup_typed(handle, Kind::queue, queue);
   if (found != Lookup::ok) {
@@ -648,7 +653,8 @@ lumen_status_t submit(lumen_queue_t handle,
 
   std::uint64_t dst_id = 0;
   std::uint64_t src_id = 0;
-  if (command->kind == LUMEN_COMMAND_COPY || command->kind == LUMEN_COMMAND_FILL) {
+  if (command->kind == LUMEN_COMMAND_COPY ||
+      command->kind == LUMEN_COMMAND_FILL) {
     if (command->dst == nullptr || command->length == 0) {
       return LUMEN_STATUS_INVALID_INPUT;
     }
@@ -691,7 +697,8 @@ lumen_status_t submit(lumen_queue_t handle,
   std::uint64_t ready_tick = 0;
   if (context->mode == Mode::mock) {
     constexpr std::uint64_t max = (std::numeric_limits<std::uint64_t>::max)();
-    const std::uint64_t base = (std::max)(context->tick, queue->last_ready_tick);
+    const std::uint64_t base =
+        (std::max)(context->tick, queue->last_ready_tick);
     if (context->delay_ticks > max - base) {
       return LUMEN_STATUS_RESOURCE_EXHAUSTED;
     }
@@ -701,7 +708,7 @@ lumen_status_t submit(lumen_queue_t handle,
   std::shared_ptr<Event> event;
   try {
     event = std::make_shared<Event>();
-  } catch (const std::bad_alloc&) {
+  } catch (const std::bad_alloc &) {
     return LUMEN_STATUS_RESOURCE_EXHAUSTED;
   }
   event->kind = Kind::event;
@@ -743,7 +750,7 @@ lumen_status_t submit(lumen_queue_t handle,
       ++queue->pending;
       try {
         context->pending_events.push_back(id);
-      } catch (const std::bad_alloc&) {
+      } catch (const std::bad_alloc &) {
         --queue->pending;
         event->queued = false;
         event->retired = true;
@@ -758,7 +765,8 @@ lumen_status_t submit(lumen_queue_t handle,
   return LUMEN_STATUS_OK;
 }
 
-lumen_status_t poll_event(lumen_event_t handle, lumen_event_state_v1* out_state) {
+lumen_status_t poll_event(lumen_event_t handle,
+                          lumen_event_state_v1 *out_state) {
   std::shared_ptr<Event> event;
   const Lookup found = lookup_typed(handle, Kind::event, event);
   if (found != Lookup::ok) {
@@ -777,9 +785,8 @@ lumen_status_t poll_event(lumen_event_t handle, lumen_event_state_v1* out_state)
   return LUMEN_STATUS_OK;
 }
 
-lumen_status_t wait_event(lumen_event_t handle,
-                          uint64_t timeout_ns,
-                          lumen_event_state_v1* out_state) {
+lumen_status_t wait_event(lumen_event_t handle, uint64_t timeout_ns,
+                          lumen_event_state_v1 *out_state) {
   (void)timeout_ns;
   std::shared_ptr<Event> event;
   const Lookup found = lookup_typed(handle, Kind::event, event);
@@ -815,7 +822,8 @@ lumen_status_t release_event(lumen_event_t handle) {
   return LUMEN_STATUS_OK;
 }
 
-lumen_status_t mock_set_completion_delay(lumen_context_t handle, uint64_t delay_ticks) {
+lumen_status_t mock_set_completion_delay(lumen_context_t handle,
+                                         uint64_t delay_ticks) {
   std::shared_ptr<Context> context;
   const Lookup found = lookup_typed(handle, Kind::context, context);
   if (found != Lookup::ok) {
@@ -847,7 +855,7 @@ lumen_status_t mock_advance(lumen_context_t handle, uint64_t ticks) {
   std::vector<std::uint64_t> remaining;
   try {
     remaining.reserve(context->pending_events.size());
-  } catch (const std::bad_alloc&) {
+  } catch (const std::bad_alloc &) {
     return LUMEN_STATUS_RESOURCE_EXHAUSTED;
   }
   for (const std::uint64_t id : context->pending_events) {
@@ -867,7 +875,7 @@ lumen_status_t mock_advance(lumen_context_t handle, uint64_t ticks) {
   return LUMEN_STATUS_OK;
 }
 
-lumen_status_t mock_pending_count(lumen_context_t handle, uint64_t* out_count) {
+lumen_status_t mock_pending_count(lumen_context_t handle, uint64_t *out_count) {
   std::shared_ptr<Context> context;
   const Lookup found = lookup_typed(handle, Kind::context, context);
   if (found != Lookup::ok) {
@@ -883,4 +891,4 @@ lumen_status_t mock_pending_count(lumen_context_t handle, uint64_t* out_count) {
   return LUMEN_STATUS_OK;
 }
 
-}  // namespace lumen::backend
+} // namespace lumen::backend

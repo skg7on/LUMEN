@@ -12,7 +12,7 @@ using lumen::Status;
 
 namespace {
 constexpr std::size_t kMax = std::numeric_limits<std::size_t>::max();
-}  // namespace
+} // namespace
 
 static void addition_rejects_overflow() {
   CHECK(lumen::checked_add(0, 0).value() == 0);

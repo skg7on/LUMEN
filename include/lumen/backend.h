@@ -67,11 +67,11 @@ typedef struct lumen_buffer lumen_buffer;
 typedef struct lumen_queue lumen_queue;
 typedef struct lumen_event lumen_event;
 
-typedef lumen_context* lumen_context_t;
-typedef lumen_device* lumen_device_t;
-typedef lumen_buffer* lumen_buffer_t;
-typedef lumen_queue* lumen_queue_t;
-typedef lumen_event* lumen_event_t;
+typedef lumen_context *lumen_context_t;
+typedef lumen_device *lumen_device_t;
+typedef lumen_buffer *lumen_buffer_t;
+typedef lumen_queue *lumen_queue_t;
+typedef lumen_event *lumen_event_t;
 
 /* Records carry their own size and ABI version. The host initializes these
  * fields before passing a writable record; the backend validates them. */
@@ -116,7 +116,8 @@ typedef struct lumen_buffer_desc_v1 {
   uint32_t flags;
 } lumen_buffer_desc_v1;
 
-/* Queue creation descriptor. `max_inflight == 0` selects the backend default. */
+/* Queue creation descriptor. `max_inflight == 0` selects the backend default.
+ */
 typedef struct lumen_queue_desc_v1 {
   uint32_t struct_size;
   uint32_t flags;
@@ -182,55 +183,59 @@ struct lumen_backend_api_v1 {
   uint32_t abi_minor;
   uint32_t flags;
 
-  lumen_status_t (*backend_open)(const lumen_backend_api_v1* api,
-                                 lumen_context_t* out_context);
+  lumen_status_t (*backend_open)(const lumen_backend_api_v1 *api,
+                                 lumen_context_t *out_context);
   lumen_status_t (*context_close)(lumen_context_t context);
   /* Succeeds only when the context has no live children. Resets simulated
    * device state (mock time) but never invalidates retired handles. */
   lumen_status_t (*context_reset)(lumen_context_t context);
 
-  lumen_status_t (*device_open)(lumen_context_t context, lumen_device_t* out_device);
+  lumen_status_t (*device_open)(lumen_context_t context,
+                                lumen_device_t *out_device);
   lumen_status_t (*device_close)(lumen_device_t device);
-  lumen_status_t (*device_capabilities)(lumen_device_t device,
-                                        lumen_capabilities_v1* out_capabilities);
+  lumen_status_t (*device_capabilities)(
+      lumen_device_t device, lumen_capabilities_v1 *out_capabilities);
 
   lumen_status_t (*buffer_create)(lumen_device_t device,
-                                  const lumen_buffer_desc_v1* desc,
-                                  lumen_buffer_t* out_buffer);
+                                  const lumen_buffer_desc_v1 *desc,
+                                  lumen_buffer_t *out_buffer);
   lumen_status_t (*buffer_destroy)(lumen_buffer_t buffer);
-  /* Host mapping of a HOST buffer. Map/unmap are not reference counted in v1. */
-  lumen_status_t (*buffer_map)(lumen_buffer_t buffer, void** out_data, uint64_t* out_size);
+  /* Host mapping of a HOST buffer. Map/unmap are not reference counted in v1.
+   */
+  lumen_status_t (*buffer_map)(lumen_buffer_t buffer, void **out_data,
+                               uint64_t *out_size);
   lumen_status_t (*buffer_unmap)(lumen_buffer_t buffer);
 
   lumen_status_t (*queue_create)(lumen_device_t device,
-                                 const lumen_queue_desc_v1* desc,
-                                 lumen_queue_t* out_queue);
+                                 const lumen_queue_desc_v1 *desc,
+                                 lumen_queue_t *out_queue);
   lumen_status_t (*queue_destroy)(lumen_queue_t queue);
   lumen_status_t (*queue_submit)(lumen_queue_t queue,
-                                 const lumen_command_v1* command,
-                                 lumen_event_t* out_event);
+                                 const lumen_command_v1 *command,
+                                 lumen_event_t *out_event);
 
   /* Returns LUMEN_STATUS_OK and a final or pending state for a live event. */
-  lumen_status_t (*event_poll)(lumen_event_t event, lumen_event_state_v1* out_state);
+  lumen_status_t (*event_poll)(lumen_event_t event,
+                               lumen_event_state_v1 *out_state);
   /* Returns LUMEN_STATUS_OK for a final state or LUMEN_STATUS_TIMEOUT while
    * pending. Adapters with simulated time do not advance it implicitly. */
-  lumen_status_t (*event_wait)(lumen_event_t event,
-                               uint64_t timeout_ns,
-                               lumen_event_state_v1* out_state);
+  lumen_status_t (*event_wait)(lumen_event_t event, uint64_t timeout_ns,
+                               lumen_event_state_v1 *out_state);
   /* Releases an event in a final state exactly once. */
   lumen_status_t (*event_release)(lumen_event_t event);
 };
 
 /* Built-in adapters; neither requires a vendor SDK or device. */
-LUMEN_API const lumen_backend_api_v1* lumen_cpu_backend_api(void);
-LUMEN_API const lumen_backend_api_v1* lumen_mock_backend_api(void);
+LUMEN_API const lumen_backend_api_v1 *lumen_cpu_backend_api(void);
+LUMEN_API const lumen_backend_api_v1 *lumen_mock_backend_api(void);
 
 /* Validates presence, size, ABI version, and required function pointers.
  * Returns LUMEN_STATUS_UNSUPPORTED for an incompatible size or version. */
-LUMEN_API lumen_status_t lumen_backend_api_validate(const lumen_backend_api_v1* api);
+LUMEN_API lumen_status_t
+lumen_backend_api_validate(const lumen_backend_api_v1 *api);
 
 #ifdef __cplusplus
-}  /* extern "C" */
+} /* extern "C" */
 #endif
 
 #endif /* LUMEN_BACKEND_H */

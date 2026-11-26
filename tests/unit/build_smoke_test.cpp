@@ -9,7 +9,7 @@
 
 static void host_configuration_is_cxx20_and_active() {
   CHECK(__cplusplus >= 202002L);
-  CHECK(sizeof(void*) == 8);
+  CHECK(sizeof(void *) == 8);
   CHECK(sizeof(unsigned long long) == 8);
 }
 

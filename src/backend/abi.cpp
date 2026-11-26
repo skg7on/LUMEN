@@ -2,7 +2,8 @@
 
 #include "lumen/backend.h"
 
-extern "C" lumen_status_t lumen_backend_api_validate(const lumen_backend_api_v1* api) {
+extern "C" lumen_status_t
+lumen_backend_api_validate(const lumen_backend_api_v1 *api) {
   if (api == nullptr) {
     return LUMEN_STATUS_INVALID_INPUT;
   }

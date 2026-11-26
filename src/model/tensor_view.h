@@ -30,45 +30,45 @@ enum class DType {
 
 inline constexpr std::size_t kMaxTensorRank = 4;
 
-inline constexpr const char* dtype_name(DType dtype) {
+inline constexpr const char *dtype_name(DType dtype) {
   switch (dtype) {
-    case DType::f32:
-      return "f32";
-    case DType::f16:
-      return "f16";
-    case DType::bf16:
-      return "bf16";
-    case DType::i8:
-      return "i8";
-    case DType::u8:
-      return "u8";
-    case DType::i32:
-      return "i32";
-    case DType::u32:
-      return "u32";
+  case DType::f32:
+    return "f32";
+  case DType::f16:
+    return "f16";
+  case DType::bf16:
+    return "bf16";
+  case DType::i8:
+    return "i8";
+  case DType::u8:
+    return "u8";
+  case DType::i32:
+    return "i32";
+  case DType::u32:
+    return "u32";
   }
   return "unknown";
 }
 
 inline Result<std::size_t> dtype_size(DType dtype) {
   switch (dtype) {
-    case DType::f32:
-      return Result<std::size_t>::ok(4);
-    case DType::f16:
-    case DType::bf16:
-      return Result<std::size_t>::ok(2);
-    case DType::i8:
-    case DType::u8:
-      return Result<std::size_t>::ok(1);
-    case DType::i32:
-    case DType::u32:
-      return Result<std::size_t>::ok(4);
+  case DType::f32:
+    return Result<std::size_t>::ok(4);
+  case DType::f16:
+  case DType::bf16:
+    return Result<std::size_t>::ok(2);
+  case DType::i8:
+  case DType::u8:
+    return Result<std::size_t>::ok(1);
+  case DType::i32:
+  case DType::u32:
+    return Result<std::size_t>::ok(4);
   }
   return Result<std::size_t>::error(Status::unsupported);
 }
 
 class TensorLayout {
- public:
+public:
   // Row-major layout with unit stride on the last dimension.
   static Result<TensorLayout> contiguous(DType dtype,
                                          std::span<const std::size_t> shape,
@@ -96,7 +96,8 @@ class TensorLayout {
                                       std::span<const std::size_t> shape,
                                       std::span<const std::size_t> strides,
                                       std::size_t required_alignment = 1) {
-    if (shape.empty() || shape.size() > kMaxTensorRank || strides.size() != shape.size()) {
+    if (shape.empty() || shape.size() > kMaxTensorRank ||
+        strides.size() != shape.size()) {
       return Result<TensorLayout>::error(Status::invalid_input);
     }
     return make(dtype, shape, strides, required_alignment);
@@ -105,12 +106,18 @@ class TensorLayout {
   [[nodiscard]] DType dtype() const noexcept { return dtype_; }
   [[nodiscard]] std::size_t rank() const noexcept { return rank_; }
   [[nodiscard]] std::size_t dim(std::size_t axis) const { return shape_[axis]; }
-  [[nodiscard]] std::size_t stride(std::size_t axis) const { return strides_[axis]; }
-  [[nodiscard]] std::size_t element_count() const noexcept { return element_count_; }
+  [[nodiscard]] std::size_t stride(std::size_t axis) const {
+    return strides_[axis];
+  }
+  [[nodiscard]] std::size_t element_count() const noexcept {
+    return element_count_;
+  }
   [[nodiscard]] std::size_t byte_size() const noexcept { return byte_size_; }
-  [[nodiscard]] std::size_t required_alignment() const noexcept { return required_alignment_; }
+  [[nodiscard]] std::size_t required_alignment() const noexcept {
+    return required_alignment_;
+  }
 
- private:
+private:
   static Result<TensorLayout> make(DType dtype,
                                    std::span<const std::size_t> shape,
                                    std::span<const std::size_t> strides,
@@ -172,15 +179,15 @@ class TensorLayout {
 
 // A validated window into caller-owned storage.
 class TensorView {
- public:
-  static Result<TensorView> bind(const TensorLayout& layout,
-                                 const void* storage,
-                                 std::size_t storage_bytes,
+public:
+  static Result<TensorView> bind(const TensorLayout &layout,
+                                 const void *storage, std::size_t storage_bytes,
                                  std::size_t byte_offset) {
     if (storage == nullptr) {
       return Result<TensorView>::error(Status::invalid_input);
     }
-    if (checked_range(byte_offset, layout.byte_size(), storage_bytes) != Status::ok) {
+    if (checked_range(byte_offset, layout.byte_size(), storage_bytes) !=
+        Status::ok) {
       return Result<TensorView>::error(Status::invalid_input);
     }
     const auto base = reinterpret_cast<std::uintptr_t>(storage);
@@ -190,28 +197,31 @@ class TensorView {
     }
     const auto address = base + byte_offset;
     if (layout.required_alignment() != 1 &&
-        address % static_cast<std::uintptr_t>(layout.required_alignment()) != 0) {
+        address % static_cast<std::uintptr_t>(layout.required_alignment()) !=
+            0) {
       return Result<TensorView>::error(Status::invalid_input);
     }
 
     TensorView view;
     view.layout_ = layout;
-    view.data_ = static_cast<const std::byte*>(storage) + byte_offset;
+    view.data_ = static_cast<const std::byte *>(storage) + byte_offset;
     view.byte_offset_ = byte_offset;
     return Result<TensorView>::ok(view);
   }
 
-  [[nodiscard]] const TensorLayout& layout() const noexcept { return layout_; }
-  [[nodiscard]] const std::byte* data() const noexcept { return data_; }
-  [[nodiscard]] std::size_t byte_offset() const noexcept { return byte_offset_; }
+  [[nodiscard]] const TensorLayout &layout() const noexcept { return layout_; }
+  [[nodiscard]] const std::byte *data() const noexcept { return data_; }
+  [[nodiscard]] std::size_t byte_offset() const noexcept {
+    return byte_offset_;
+  }
   [[nodiscard]] std::span<const std::byte> bytes() const noexcept {
     return std::span<const std::byte>{data_, layout_.byte_size()};
   }
 
- private:
+private:
   TensorLayout layout_{};
-  const std::byte* data_ = nullptr;
+  const std::byte *data_ = nullptr;
   std::size_t byte_offset_ = 0;
 };
 
-}  // namespace lumen
+} // namespace lumen

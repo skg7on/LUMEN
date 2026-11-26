@@ -15,14 +15,14 @@ namespace {
 
 struct NoDefault {
   explicit NoDefault(int initial) : value(initial) {}
-  NoDefault(const NoDefault&) = delete;
-  NoDefault& operator=(const NoDefault&) = delete;
-  NoDefault(NoDefault&&) = default;
-  NoDefault& operator=(NoDefault&&) = default;
+  NoDefault(const NoDefault &) = delete;
+  NoDefault &operator=(const NoDefault &) = delete;
+  NoDefault(NoDefault &&) = default;
+  NoDefault &operator=(NoDefault &&) = default;
   int value;
 };
 
-}  // namespace
+} // namespace
 
 static void status_values_are_stable() {
   CHECK(static_cast<int>(Status::ok) == 0);
@@ -37,12 +37,16 @@ static void status_values_are_stable() {
 
 static void status_names_are_readable() {
   CHECK(lumen::status_name(Status::ok) == std::string_view{"ok"});
-  CHECK(lumen::status_name(Status::invalid_input) == std::string_view{"invalid_input"});
-  CHECK(lumen::status_name(Status::unsupported) == std::string_view{"unsupported"});
-  CHECK(lumen::status_name(Status::resource_exhausted) == std::string_view{"resource_exhausted"});
+  CHECK(lumen::status_name(Status::invalid_input) ==
+        std::string_view{"invalid_input"});
+  CHECK(lumen::status_name(Status::unsupported) ==
+        std::string_view{"unsupported"});
+  CHECK(lumen::status_name(Status::resource_exhausted) ==
+        std::string_view{"resource_exhausted"});
   CHECK(lumen::status_name(Status::stale) == std::string_view{"stale"});
   CHECK(lumen::status_name(Status::timeout) == std::string_view{"timeout"});
-  CHECK(lumen::status_name(Status::device_error) == std::string_view{"device_error"});
+  CHECK(lumen::status_name(Status::device_error) ==
+        std::string_view{"device_error"});
   CHECK(lumen::status_name(Status::corrupt) == std::string_view{"corrupt"});
 }
 

@@ -7,7 +7,8 @@
 
 namespace {
 
-lumen_status_t open_mock(const lumen_backend_api_v1* api, lumen_context_t* out_context) {
+lumen_status_t open_mock(const lumen_backend_api_v1 *api,
+                         lumen_context_t *out_context) {
   if (const lumen_status_t validated = lumen_backend_api_validate(api);
       validated != LUMEN_STATUS_OK) {
     return validated;
@@ -38,6 +39,8 @@ constexpr lumen_backend_api_v1 kMockApi = {
     .event_release = lumen::backend::release_event,
 };
 
-}  // namespace
+} // namespace
 
-extern "C" const lumen_backend_api_v1* lumen_mock_backend_api(void) { return &kMockApi; }
+extern "C" const lumen_backend_api_v1 *lumen_mock_backend_api(void) {
+  return &kMockApi;
+}

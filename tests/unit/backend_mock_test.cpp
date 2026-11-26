@@ -12,7 +12,7 @@
 
 namespace {
 
-const lumen_backend_api_v1* mock_api() { return lumen_mock_backend_api(); }
+const lumen_backend_api_v1 *mock_api() { return lumen_mock_backend_api(); }
 
 lumen_buffer_desc_v1 host_buffer_desc(std::uint64_t size) {
   lumen_buffer_desc_v1 desc{};
@@ -38,7 +38,8 @@ lumen_event_state_v1 event_state() {
   return state;
 }
 
-lumen_command_v1 copy_command(lumen_buffer_t src, lumen_buffer_t dst, std::uint64_t length) {
+lumen_command_v1 copy_command(lumen_buffer_t src, lumen_buffer_t dst,
+                              std::uint64_t length) {
   lumen_command_v1 command{};
   command.struct_size = sizeof(command);
   command.kind = LUMEN_COMMAND_COPY;
@@ -56,7 +57,7 @@ lumen_command_v1 nop_command() {
 }
 
 struct Fixture {
-  const lumen_backend_api_v1* api = mock_api();
+  const lumen_backend_api_v1 *api = mock_api();
   lumen_context_t context = nullptr;
   lumen_device_t device = nullptr;
 
@@ -77,25 +78,29 @@ struct Fixture {
   }
 };
 
-}  // namespace
+} // namespace
 
 static void delayed_completion_fences_retirement() {
   Fixture fixture;
   REQUIRE(fixture.open());
-  REQUIRE(lumen_mock_set_completion_delay_ticks(fixture.context, 4) == LUMEN_STATUS_OK);
+  REQUIRE(lumen_mock_set_completion_delay_ticks(fixture.context, 4) ==
+          LUMEN_STATUS_OK);
 
   lumen_queue_desc_v1 qdesc = queue_desc();
   lumen_queue_t queue = nullptr;
-  REQUIRE(fixture.api->queue_create(fixture.device, &qdesc, &queue) == LUMEN_STATUS_OK);
+  REQUIRE(fixture.api->queue_create(fixture.device, &qdesc, &queue) ==
+          LUMEN_STATUS_OK);
 
   lumen_buffer_desc_v1 bdesc = host_buffer_desc(64);
   lumen_buffer_t src = nullptr;
   lumen_buffer_t dst = nullptr;
-  REQUIRE(fixture.api->buffer_create(fixture.device, &bdesc, &src) == LUMEN_STATUS_OK);
-  REQUIRE(fixture.api->buffer_create(fixture.device, &bdesc, &dst) == LUMEN_STATUS_OK);
+  REQUIRE(fixture.api->buffer_create(fixture.device, &bdesc, &src) ==
+          LUMEN_STATUS_OK);
+  REQUIRE(fixture.api->buffer_create(fixture.device, &bdesc, &dst) ==
+          LUMEN_STATUS_OK);
 
-  void* src_data = nullptr;
-  void* dst_data = nullptr;
+  void *src_data = nullptr;
+  void *dst_data = nullptr;
   std::uint64_t size = 0;
   REQUIRE(fixture.api->buffer_map(src, &src_data, &size) == LUMEN_STATUS_OK);
   REQUIRE(fixture.api->buffer_map(dst, &dst_data, &size) == LUMEN_STATUS_OK);
@@ -104,7 +109,8 @@ static void delayed_completion_fences_retirement() {
 
   lumen_command_v1 command = copy_command(src, dst, 64);
   lumen_event_t event = nullptr;
-  REQUIRE(fixture.api->queue_submit(queue, &command, &event) == LUMEN_STATUS_OK);
+  REQUIRE(fixture.api->queue_submit(queue, &command, &event) ==
+          LUMEN_STATUS_OK);
 
   lumen_event_state_v1 state = event_state();
   REQUIRE(fixture.api->event_poll(event, &state) == LUMEN_STATUS_OK);
@@ -120,14 +126,15 @@ static void delayed_completion_fences_retirement() {
   CHECK(fixture.api->queue_destroy(queue) == LUMEN_STATUS_INVALID_INPUT);
 
   std::uint64_t pending = 99;
-  CHECK(lumen_mock_pending_commands(fixture.context, &pending) == LUMEN_STATUS_OK);
+  CHECK(lumen_mock_pending_commands(fixture.context, &pending) ==
+        LUMEN_STATUS_OK);
   CHECK(pending == 1);
 
   CHECK(lumen_mock_advance_ticks(fixture.context, 3) == LUMEN_STATUS_OK);
   state = event_state();
   REQUIRE(fixture.api->event_poll(event, &state) == LUMEN_STATUS_OK);
   CHECK(state.status == LUMEN_EVENT_PENDING);
-  CHECK(static_cast<std::uint8_t*>(dst_data)[0] == 0);
+  CHECK(static_cast<std::uint8_t *>(dst_data)[0] == 0);
 
   CHECK(lumen_mock_advance_ticks(fixture.context, 1) == LUMEN_STATUS_OK);
   state = event_state();
@@ -136,7 +143,8 @@ static void delayed_completion_fences_retirement() {
   CHECK(state.command_status == LUMEN_STATUS_OK);
   CHECK(std::memcmp(src_data, dst_data, 64) == 0);
 
-  CHECK(lumen_mock_pending_commands(fixture.context, &pending) == LUMEN_STATUS_OK);
+  CHECK(lumen_mock_pending_commands(fixture.context, &pending) ==
+        LUMEN_STATUS_OK);
   CHECK(pending == 0);
 
   // Completion is the fence; release of the event is not required first.
@@ -150,18 +158,22 @@ static void delayed_completion_fences_retirement() {
 static void queue_completions_stay_in_submission_order() {
   Fixture fixture;
   REQUIRE(fixture.open());
-  REQUIRE(lumen_mock_set_completion_delay_ticks(fixture.context, 3) == LUMEN_STATUS_OK);
+  REQUIRE(lumen_mock_set_completion_delay_ticks(fixture.context, 3) ==
+          LUMEN_STATUS_OK);
 
   lumen_queue_desc_v1 qdesc = queue_desc();
   lumen_queue_t queue = nullptr;
-  REQUIRE(fixture.api->queue_create(fixture.device, &qdesc, &queue) == LUMEN_STATUS_OK);
+  REQUIRE(fixture.api->queue_create(fixture.device, &qdesc, &queue) ==
+          LUMEN_STATUS_OK);
 
   lumen_event_t first = nullptr;
   lumen_command_v1 first_command = nop_command();
-  REQUIRE(fixture.api->queue_submit(queue, &first_command, &first) == LUMEN_STATUS_OK);
+  REQUIRE(fixture.api->queue_submit(queue, &first_command, &first) ==
+          LUMEN_STATUS_OK);
   lumen_command_v1 second_command = nop_command();
   lumen_event_t second = nullptr;
-  REQUIRE(fixture.api->queue_submit(queue, &second_command, &second) == LUMEN_STATUS_OK);
+  REQUIRE(fixture.api->queue_submit(queue, &second_command, &second) ==
+          LUMEN_STATUS_OK);
 
   CHECK(lumen_mock_advance_ticks(fixture.context, 3) == LUMEN_STATUS_OK);
 
@@ -186,11 +198,13 @@ static void queue_completions_stay_in_submission_order() {
 static void reset_zeroes_simulated_time() {
   Fixture fixture;
   REQUIRE(fixture.open());
-  REQUIRE(lumen_mock_set_completion_delay_ticks(fixture.context, 2) == LUMEN_STATUS_OK);
+  REQUIRE(lumen_mock_set_completion_delay_ticks(fixture.context, 2) ==
+          LUMEN_STATUS_OK);
 
   lumen_queue_desc_v1 qdesc = queue_desc();
   lumen_queue_t queue = nullptr;
-  REQUIRE(fixture.api->queue_create(fixture.device, &qdesc, &queue) == LUMEN_STATUS_OK);
+  REQUIRE(fixture.api->queue_create(fixture.device, &qdesc, &queue) ==
+          LUMEN_STATUS_OK);
 
   lumen_event_t event = nullptr;
   lumen_command_v1 nop = nop_command();
@@ -205,11 +219,14 @@ static void reset_zeroes_simulated_time() {
   fixture.device = nullptr;
 
   CHECK(fixture.api->context_reset(fixture.context) == LUMEN_STATUS_OK);
-  REQUIRE(fixture.api->device_open(fixture.context, &fixture.device) == LUMEN_STATUS_OK);
-  REQUIRE(fixture.api->queue_create(fixture.device, &qdesc, &queue) == LUMEN_STATUS_OK);
+  REQUIRE(fixture.api->device_open(fixture.context, &fixture.device) ==
+          LUMEN_STATUS_OK);
+  REQUIRE(fixture.api->queue_create(fixture.device, &qdesc, &queue) ==
+          LUMEN_STATUS_OK);
   // A maximum-1 delay only fits when tick was reset to zero: with the old
   // tick of 2 the completion tick would overflow and submit would be rejected.
-  constexpr std::uint64_t kLargeDelay = (std::numeric_limits<std::uint64_t>::max)() - 1;
+  constexpr std::uint64_t kLargeDelay =
+      (std::numeric_limits<std::uint64_t>::max)() - 1;
   REQUIRE(lumen_mock_set_completion_delay_ticks(fixture.context, kLargeDelay) ==
           LUMEN_STATUS_OK);
 
@@ -217,7 +234,8 @@ static void reset_zeroes_simulated_time() {
   lumen_command_v1 nop2 = nop_command();
   REQUIRE(fixture.api->queue_submit(queue, &nop2, &event) == LUMEN_STATUS_OK);
 
-  CHECK(lumen_mock_advance_ticks(fixture.context, kLargeDelay) == LUMEN_STATUS_OK);
+  CHECK(lumen_mock_advance_ticks(fixture.context, kLargeDelay) ==
+        LUMEN_STATUS_OK);
   state = event_state();
   REQUIRE(fixture.api->event_poll(event, &state) == LUMEN_STATUS_OK);
   CHECK(state.status == LUMEN_EVENT_COMPLETE);
@@ -229,11 +247,13 @@ static void completion_tick_overflow_is_rejected() {
   Fixture fixture;
   REQUIRE(fixture.open());
   REQUIRE(lumen_mock_set_completion_delay_ticks(
-              fixture.context, (std::numeric_limits<std::uint64_t>::max)()) == LUMEN_STATUS_OK);
+              fixture.context, (std::numeric_limits<std::uint64_t>::max)()) ==
+          LUMEN_STATUS_OK);
 
   lumen_queue_desc_v1 qdesc = queue_desc();
   lumen_queue_t queue = nullptr;
-  REQUIRE(fixture.api->queue_create(fixture.device, &qdesc, &queue) == LUMEN_STATUS_OK);
+  REQUIRE(fixture.api->queue_create(fixture.device, &qdesc, &queue) ==
+          LUMEN_STATUS_OK);
 
   // Move off tick zero so base + delay cannot be represented.
   REQUIRE(lumen_mock_advance_ticks(fixture.context, 1) == LUMEN_STATUS_OK);
@@ -247,25 +267,31 @@ static void completion_tick_overflow_is_rejected() {
   CHECK(event == sentinel);
   CHECK(fixture.api->queue_destroy(queue) == LUMEN_STATUS_OK);
 
-  CHECK(lumen_mock_set_completion_delay_ticks(fixture.context, 0) == LUMEN_STATUS_OK);
+  CHECK(lumen_mock_set_completion_delay_ticks(fixture.context, 0) ==
+        LUMEN_STATUS_OK);
 }
 
 static void mock_controls_reject_non_mock_or_missing_contexts() {
-  const lumen_backend_api_v1* cpu = lumen_cpu_backend_api();
+  const lumen_backend_api_v1 *cpu = lumen_cpu_backend_api();
   lumen_context_t cpu_context = nullptr;
   REQUIRE(cpu->backend_open(cpu, &cpu_context) == LUMEN_STATUS_OK);
 
   CHECK(lumen_mock_advance_ticks(cpu_context, 1) == LUMEN_STATUS_INVALID_INPUT);
-  CHECK(lumen_mock_set_completion_delay_ticks(cpu_context, 1) == LUMEN_STATUS_INVALID_INPUT);
+  CHECK(lumen_mock_set_completion_delay_ticks(cpu_context, 1) ==
+        LUMEN_STATUS_INVALID_INPUT);
 
   std::uint64_t pending = 77;
-  CHECK(lumen_mock_pending_commands(cpu_context, &pending) == LUMEN_STATUS_INVALID_INPUT);
+  CHECK(lumen_mock_pending_commands(cpu_context, &pending) ==
+        LUMEN_STATUS_INVALID_INPUT);
   CHECK(pending == 77);
 
   CHECK(lumen_mock_advance_ticks(nullptr, 1) == LUMEN_STATUS_INVALID_INPUT);
-  CHECK(lumen_mock_set_completion_delay_ticks(nullptr, 1) == LUMEN_STATUS_INVALID_INPUT);
-  CHECK(lumen_mock_pending_commands(nullptr, &pending) == LUMEN_STATUS_INVALID_INPUT);
-  CHECK(lumen_mock_pending_commands(cpu_context, nullptr) == LUMEN_STATUS_INVALID_INPUT);
+  CHECK(lumen_mock_set_completion_delay_ticks(nullptr, 1) ==
+        LUMEN_STATUS_INVALID_INPUT);
+  CHECK(lumen_mock_pending_commands(nullptr, &pending) ==
+        LUMEN_STATUS_INVALID_INPUT);
+  CHECK(lumen_mock_pending_commands(cpu_context, nullptr) ==
+        LUMEN_STATUS_INVALID_INPUT);
 
   CHECK(cpu->context_close(cpu_context) == LUMEN_STATUS_OK);
 }

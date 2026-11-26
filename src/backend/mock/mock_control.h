@@ -19,19 +19,20 @@ extern "C" {
 #endif
 
 /* Sets the delay applied to commands submitted after this call. */
-LUMEN_API lumen_status_t lumen_mock_set_completion_delay_ticks(lumen_context_t context,
-                                                               uint64_t delay_ticks);
+LUMEN_API lumen_status_t lumen_mock_set_completion_delay_ticks(
+    lumen_context_t context, uint64_t delay_ticks);
 
 /* Advances simulated time by `ticks` and completes commands that are due, in
  * submission order. Overflow of the tick counter is rejected. */
-LUMEN_API lumen_status_t lumen_mock_advance_ticks(lumen_context_t context, uint64_t ticks);
+LUMEN_API lumen_status_t lumen_mock_advance_ticks(lumen_context_t context,
+                                                  uint64_t ticks);
 
 /* Reports the number of submitted, not-yet-fenced commands. */
 LUMEN_API lumen_status_t lumen_mock_pending_commands(lumen_context_t context,
-                                                     uint64_t* out_count);
+                                                     uint64_t *out_count);
 
 #ifdef __cplusplus
-}  /* extern "C" */
+} /* extern "C" */
 #endif
 
 #endif /* LUMEN_MOCK_CONTROL_H */

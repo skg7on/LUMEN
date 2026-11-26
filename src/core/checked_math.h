@@ -31,7 +31,8 @@ inline Result<std::size_t> checked_mul(std::size_t lhs, std::size_t rhs) {
 }
 
 // Requires offset + length <= bound without overflowing.
-inline Status checked_range(std::size_t offset, std::size_t length, std::size_t bound) {
+inline Status checked_range(std::size_t offset, std::size_t length,
+                            std::size_t bound) {
   if (offset > bound || length > bound - offset) {
     return Status::invalid_input;
   }
@@ -46,8 +47,10 @@ inline Status checked_alignment(std::size_t alignment) {
   return Status::ok;
 }
 
-inline Result<std::size_t> checked_align_up(std::size_t value, std::size_t alignment) {
-  if (const Status status = checked_alignment(alignment); status != Status::ok) {
+inline Result<std::size_t> checked_align_up(std::size_t value,
+                                            std::size_t alignment) {
+  if (const Status status = checked_alignment(alignment);
+      status != Status::ok) {
     return Result<std::size_t>::error(status);
   }
   constexpr std::size_t max = std::numeric_limits<std::size_t>::max();
@@ -58,4 +61,4 @@ inline Result<std::size_t> checked_align_up(std::size_t value, std::size_t align
   return Result<std::size_t>::ok((value + mask) & ~mask);
 }
 
-}  // namespace lumen
+} // namespace lumen

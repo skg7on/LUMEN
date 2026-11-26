@@ -1,0 +1,7 @@
+# LUMEN C/C++ formatting is the LLVM coding style.
+#
+# Enforced in CI with clang-format 20.1.8 (see docs/build.md). Format changed
+# files with: clang-format -i <files>
+---
+BasedOnStyle: LLVM
+Standard: c++20
