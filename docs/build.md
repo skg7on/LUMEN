@@ -56,6 +56,20 @@ Registered host tests:
 | `backend-lifetime` | CPU handle ownership, retirement order, reset, events |
 | `backend-mock` | deterministic delayed completion, queue order, fencing |
 
+## Formatting
+
+C and C++ sources use the LLVM coding style from
+[`.clang-format`](../.clang-format). Format changed files with clang-format
+20.1.8 (the version pinned in CI):
+
+```bash
+find include src tests -type f \( -name '*.h' -o -name '*.c' -o -name '*.cpp' \) \
+  -print0 | xargs -0 clang-format -i
+```
+
+The `clang-format` CI job runs `clang-format --dry-run --Werror` over the same
+paths and fails on any difference.
+
 ## Target presets
 
 `target-npu` and `target-npu-x86_64` cross-configure for Linux using
@@ -90,5 +104,6 @@ the public C ABI.
 
 [`.github/workflows/host-ci.yml`](../.github/workflows/host-ci.yml) runs the host
 suite with warnings as errors on x86-64 Linux, ARM64 Linux, and ARM64 macOS, runs
-the sanitizer suite on x86-64 Linux, and cross-builds the ARM64 target preset on
-x86-64 Linux with the GNU cross toolchain.
+the sanitizer suite on x86-64 Linux, checks LLVM-style formatting with
+clang-format 20.1.8, and cross-builds the ARM64 target preset on x86-64 Linux
+with the GNU cross toolchain.

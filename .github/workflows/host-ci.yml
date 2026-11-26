@@ -66,6 +66,25 @@ jobs:
           UBSAN_OPTIONS: halt_on_error=1
         run: ctest --preset host-sanitize --output-on-failure --no-tests=error
 
+  format:
+    name: clang-format
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install clang-format
+        run: python -m pip install --disable-pip-version-check clang-format==20.1.8
+
+      - name: Check formatting
+        run: |
+          clang-format --version
+          mapfile -t files < <(git ls-files '*.h' '*.c' '*.cpp' | grep -E '^(include|src|tests)/')
+          clang-format --dry-run --Werror "${files[@]}"
+
   target-cross:
     name: cross-build (ARM64 target)
     runs-on: ubuntu-24.04

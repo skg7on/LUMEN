@@ -21,9 +21,11 @@ ctest --preset host-debug --output-on-failure --no-tests=error
 `host-release` runs the same suite in a release build; `host-sanitize` builds it
 with AddressSanitizer and UndefinedBehaviorSanitizer. `target-npu` and
 `target-npu-x86_64` cross-configure for Linux and build `liblumen` only; they
-require the matching GNU cross toolchain. There is no lint configuration yet.
-Do not assume `lumend`, `lumen-pack`, `lumen-bench`, `lumen-replay`, or
-`lumen-inspect` exist. See `docs/build.md` for the test map and ABI boundary.
+require the matching GNU cross toolchain. C/C++ formatting is LLVM style from
+`.clang-format`, enforced by CI with clang-format 20.1.8; run `clang-format -i`
+on changed sources. Do not assume `lumend`, `lumen-pack`, `lumen-bench`,
+`lumen-replay`, or `lumen-inspect` exist. See `docs/build.md` for the test map
+and ABI boundary.
 
 The roadmap prescribes for later phases:
 
