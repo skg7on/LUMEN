@@ -6,6 +6,11 @@ These plans implement the [P1–P6 design specifications](../../architecture/REA
 
 ## Plan map
 
+The detailed P0 device-qualification prerequisite is now planned separately:
+[LUMEN-002 / issue #6 — NPU qualification](2026-11-27-p0-npu-qualification.md).
+Target selection is its first required gate; the plan itself is not hardware
+qualification evidence.
+
 | Plan | Dependency | Deliverable |
 |---|---|---|
 | [P1 native single-NPU MVP](2026-11-25-p1-native-single-npu-mvp.md) | P0 readiness contract below | R0.1 native loading, generation and bounded streaming |
