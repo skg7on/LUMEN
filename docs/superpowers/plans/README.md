@@ -2,7 +2,7 @@
 
 Status: Proposed implementation plans | Date: 2026-11-25
 
-These plans implement the [P1–P6 design specifications](../../architecture/README.md). They describe future changes; this checkout still has no native build system, tests, or executable tools. Creating the plans does not execute them or qualify their hardware assumptions.
+These plans implement the [P1–P6 design specifications](../../architecture/README.md). They describe future changes. The P0 LUMEN-001 foundation now provides the native CMake/Ninja/CTest skeleton, checked core primitives, and the versioned CPU/mock backend C ABI; there is still no engine, model packer, or executable serving tool. Creating the plans does not execute them or qualify their hardware assumptions.
 
 ## Plan map
 

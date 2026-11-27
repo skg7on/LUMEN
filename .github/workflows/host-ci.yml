@@ -1,0 +1,124 @@
+# Copyright 2026 Gavin Sun
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: host-ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  host:
+    name: host (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
+          - ubuntu-24.04-arm
+          - macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Ninja (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Install Ninja (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ninja || true
+
+      - name: Record toolchain
+        run: |
+          cmake --version
+          ninja --version
+          ${CXX:-c++} --version
+
+      - name: Configure
+        run: cmake --preset host-debug -DLUMEN_WARNINGS_AS_ERRORS=ON
+
+      - name: Build
+        run: cmake --build --preset host-debug
+
+      - name: Test
+        run: ctest --preset host-debug --output-on-failure --no-tests=error
+
+  sanitize:
+    name: host-sanitize (ASan + UBSan)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Ninja
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Configure
+        run: cmake --preset host-sanitize -DLUMEN_WARNINGS_AS_ERRORS=ON
+
+      - name: Build
+        run: cmake --build --preset host-sanitize
+
+      - name: Test
+        env:
+          ASAN_OPTIONS: detect_leaks=1
+          UBSAN_OPTIONS: halt_on_error=1
+        run: ctest --preset host-sanitize --output-on-failure --no-tests=error
+
+  format:
+    name: clang-format
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install clang-format
+        run: python -m pip install --disable-pip-version-check clang-format==20.1.8
+
+      - name: Check formatting
+        run: |
+          clang-format --version
+          mapfile -t files < <(git ls-files '*.h' '*.c' '*.cpp' | grep -E '^(include|src|tests)/')
+          clang-format --dry-run --Werror "${files[@]}"
+
+  target-cross:
+    name: cross-build (ARM64 target)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install cross toolchain and Ninja
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+
+      - name: Record toolchain
+        run: |
+          cmake --version
+          ninja --version
+          aarch64-linux-gnu-g++ --version
+
+      - name: Configure
+        run: cmake --preset target-npu
+
+      - name: Build
+        run: cmake --build --preset target-npu
