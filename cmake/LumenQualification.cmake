@@ -93,7 +93,9 @@ function(lumen_add_qualification_support)
   add_library(lumen_qualification_support STATIC
     ${PROJECT_SOURCE_DIR}/tools/qualify/types.cpp
     ${PROJECT_SOURCE_DIR}/tools/qualify/profile.cpp
-    ${PROJECT_SOURCE_DIR}/tools/qualify/decision.cpp)
+    ${PROJECT_SOURCE_DIR}/tools/qualify/decision.cpp
+    ${PROJECT_SOURCE_DIR}/tools/qualify/lifecycle.cpp
+    ${PROJECT_SOURCE_DIR}/src/backend/qualification/qualification_api.cpp)
 
   target_include_directories(lumen_qualification_support
     PUBLIC

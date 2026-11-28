@@ -47,10 +47,28 @@ lumen_qualification_configure_profile(
   ${CMAKE_CURRENT_SOURCE_DIR}/qualification/data/synthetic-target-profile.json)
 lumen_add_qualification_support()
 
+add_library(lumen_qualification_test_support STATIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/support/qualification_fake.cpp)
+target_link_libraries(lumen_qualification_test_support PUBLIC
+  lumen_qualification_support)
+lumen_apply_warnings(lumen_qualification_test_support)
+
+function(lumen_add_qualification_host_test name source)
+  add_executable(${name} ${source})
+  target_link_libraries(${name} PRIVATE
+    lumen_qualification_test_support
+    lumen_test_support)
+  lumen_apply_warnings(${name})
+  add_test(NAME ${name} COMMAND ${name})
+  set_tests_properties(${name} PROPERTIES LABELS "host")
+endfunction()
+
 lumen_add_qualification_host_test(p0-qual-profile
   qualification/profile_test.cpp)
 lumen_add_qualification_host_test(p0-qual-decision
   qualification/decision_test.cpp)
+lumen_add_qualification_host_test(p0-qual-lifecycle
+  qualification/lifecycle_test.cpp)
 
 lumen_add_host_test(unit-build-smoke unit/build_smoke_test.cpp)
 lumen_add_host_test(unit-status unit/status_test.cpp)
@@ -68,3 +86,13 @@ set_target_properties(abi-c-header PROPERTIES LINKER_LANGUAGE CXX)
 lumen_apply_warnings(abi-c-header)
 add_test(NAME abi-c-header COMMAND abi-c-header)
 set_tests_properties(abi-c-header PROPERTIES LABELS "host")
+
+# Compile and link the private qualification extension from a C11 translation
+# unit. It validates exact table size/version, the base table, and pointers.
+add_executable(abi-qualification-c abi/qualification_header_c.c)
+target_link_libraries(abi-qualification-c PRIVATE lumen_qualification_support)
+target_compile_features(abi-qualification-c PRIVATE c_std_11)
+set_target_properties(abi-qualification-c PROPERTIES LINKER_LANGUAGE CXX)
+lumen_apply_warnings(abi-qualification-c)
+add_test(NAME abi-qualification-c COMMAND abi-qualification-c)
+set_tests_properties(abi-qualification-c PROPERTIES LABELS "host")

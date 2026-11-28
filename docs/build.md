@@ -55,6 +55,32 @@ Registered host tests:
 | `abi-c-header` | public backend header compiled and linked as C11 |
 | `backend-lifetime` | CPU handle ownership, retirement order, reset, events |
 | `backend-mock` | deterministic delayed completion, queue order, fencing |
+| `p0-qual-profile` | checked qualification budgets, non-finite bounds, profile identity |
+| `p0-qual-decision` | fail-closed evidence evaluation and P1/P2/P3 eligibility |
+| `p0-qual-lifecycle` | receipts, fences, epochs, quarantine, proof-driven retirement |
+| `abi-qualification-c` | private qualification extension compiled as C11 and table validation |
+
+## Qualification harness (SDK-free)
+
+The qualification harness builds and tests without a vendor NPU SDK or device.
+It adds `lumen_qualification_support` and a synthetic test profile; the fixture
+is harness input only and is never device evidence. The private extension in
+[`src/backend/qualification/qualification_api.h`](../src/backend/qualification/qualification_api.h)
+is experimental and is not part of the public ABI in
+[`include/lumen/backend.h`](../include/lumen/backend.h).
+
+The development-only validator checks the documented bundle structure and
+cross-file invariants, and can seal a completed bundle after hashing its
+artifacts. It uses only the Python 3 standard library and is not shipped:
+
+```bash
+python3 -m unittest discover -s scripts/qualification -p 'test_*.py'
+python3 scripts/qualification/validate_evidence.py <manifest> --require-real-device
+```
+
+A passing harness run is not NPU qualification. Actual-board evidence, a frozen
+target profile, and the acceptance matrix remain LUMEN-002 work; issue #6 stays
+open until that evidence exists.
 
 ## Formatting
 
