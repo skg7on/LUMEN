@@ -265,6 +265,8 @@ struct CapabilityDecision {
   std::string capability;
   EvidenceState state = EvidenceState::not_tested;
   std::vector<std::string> supporting_probes;
+  std::vector<std::string> allowed_shapes;
+  std::vector<std::string> allowed_precisions;
   std::string fallback_mode;
   std::string disabled_reason;
 };

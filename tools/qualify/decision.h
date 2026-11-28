@@ -64,6 +64,8 @@ inline constexpr std::string_view kReasonDuplicateProbe = "duplicate_probe_id";
 inline constexpr std::string_view kReasonCorrectnessMismatch =
     "correctness_mismatch";
 inline constexpr std::string_view kReasonCleanupFailed = "cleanup_failed";
+inline constexpr std::string_view kReasonDependency =
+    "dependency_not_supported";
 
 const ProbeResult *find_probe(const EvidenceBundle &bundle,
                               std::string_view id);

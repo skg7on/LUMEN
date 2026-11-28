@@ -366,6 +366,49 @@ void capabilities_report_supporting_evidence() {
   CHECK(saw_execution);
 }
 
+void capabilities_report_allowed_shapes_and_precisions() {
+  const QualificationDecision decision = evaluate(valid_bundle());
+  bool saw_execution = false;
+  for (const CapabilityDecision &capability : decision.capabilities) {
+    if (capability.capability != "execution.async_compute") {
+      continue;
+    }
+    saw_execution = true;
+    CHECK(std::find(capability.allowed_shapes.begin(),
+                    capability.allowed_shapes.end(),
+                    "16x16x16") != capability.allowed_shapes.end());
+    CHECK(std::find(capability.allowed_precisions.begin(),
+                    capability.allowed_precisions.end(),
+                    "fp16") != capability.allowed_precisions.end());
+  }
+  CHECK(saw_execution);
+}
+
+void unsupported_dependency_blocks_required_probe() {
+  EvidenceBundle bundle = valid_bundle();
+  probe_named(bundle, kProbeAsyncCompute)->depends_on = {"device/placement"};
+  const QualificationDecision decision = evaluate(bundle);
+  CHECK(decision.overall == OverallDecision::blocked);
+  CHECK(has_reason_prefix(decision, kReasonDependency));
+  CHECK(!decision.p1_eligible);
+}
+
+void optional_probe_with_unsupported_dependency_does_not_block() {
+  EvidenceBundle bundle = valid_bundle();
+  ProbeResult optional;
+  optional.id = "optional/gemm-extra";
+  optional.state = EvidenceState::supported;
+  optional.required = false;
+  optional.cleanup_ok = true;
+  optional.tested_operator_families = {"convolution"};
+  optional.depends_on = {"missing/dependency"};
+  bundle.probes.push_back(optional);
+
+  const QualificationDecision decision = evaluate(bundle);
+  CHECK(decision.overall == OverallDecision::qualified);
+  CHECK(!has_family(decision, "convolution"));
+}
+
 } // namespace
 
 int main() {
@@ -386,5 +429,8 @@ int main() {
   p2_native_requires_native_paged_attention();
   p3_only_includes_tested_families();
   capabilities_report_supporting_evidence();
+  capabilities_report_allowed_shapes_and_precisions();
+  unsupported_dependency_blocks_required_probe();
+  optional_probe_with_unsupported_dependency_does_not_block();
   return lumen::test::summary("p0-qual-decision");
 }

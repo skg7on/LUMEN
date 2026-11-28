@@ -282,6 +282,11 @@ def _validate_probes(probes: Any, run_id: str) -> list[dict[str, Any]]:
                       f"{context}.quarantine_resolved")
         _require_int(_require_key(probe, "correctness_mismatches", context),
                      f"{context}.correctness_mismatches")
+        depends_on = _require_list(probe.get("depends_on", []),
+                                   f"{context}.depends_on")
+        for dependency_index, dependency in enumerate(depends_on):
+            _require_str(dependency,
+                         f"{context}.depends_on[{dependency_index}]")
         timings = _require_list(probe.get("timings", []), f"{context}.timings")
         for timing_index, timing in enumerate(timings):
             _validate_timing(timing, run_id, probe_id,
@@ -303,6 +308,12 @@ def _validate_capabilities(capabilities: Any) -> list[Any]:
             raise ValidationError(f"unknown capability state: {state!r}")
         _require_list(capability.get("supporting_probes", []),
                       f"{context}.supporting_probes")
+        for field in ("allowed_shapes", "allowed_precisions"):
+            if field not in capability:
+                continue
+            for item_index, item in enumerate(
+                    _require_list(capability[field], f"{context}.{field}")):
+                _require_str(item, f"{context}.{field}[{item_index}]")
     return items
 
 
@@ -332,6 +343,7 @@ def _validate_decision(decision: Any, probes: list[dict[str, Any]]) -> dict[str,
         _require_str(limitation, f"decision.limitations[{index}]")
 
     if overall == "qualified":
+        by_id = {probe["id"]: probe for probe in probes}
         for probe in probes:
             if not probe["required"]:
                 continue
@@ -343,6 +355,20 @@ def _validate_decision(decision: Any, probes: list[dict[str, Any]]) -> dict[str,
                 raise ValidationError(
                     "qualified decision cites unresolved required evidence: "
                     f"{probe['id']}")
+            visited: set[str] = set()
+            pending = list(probe.get("depends_on", []))
+            while pending:
+                dependency_id = pending.pop()
+                if dependency_id in visited:
+                    continue
+                visited.add(dependency_id)
+                dependency = by_id.get(dependency_id)
+                if dependency is None or dependency["state"] != "supported":
+                    raise ValidationError(
+                        "qualified decision cites a required probe with an "
+                        f"unsupported dependency: {probe['id']} -> "
+                        f"{dependency_id}")
+                pending.extend(dependency.get("depends_on", []))
     return obj
 
 

@@ -159,6 +159,10 @@
           "cleanup_ok": { "type": "boolean" },
           "quarantine_resolved": { "type": "boolean" },
           "correctness_mismatches": { "type": "integer", "minimum": 0 },
+          "depends_on": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          },
           "timings": {
             "type": "array",
             "items": {
@@ -210,6 +214,14 @@
             ]
           },
           "supporting_probes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "allowed_shapes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "allowed_precisions": {
             "type": "array",
             "items": { "type": "string" }
           },

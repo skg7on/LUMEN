@@ -102,6 +102,29 @@ QualificationDecision evaluate(const EvidenceBundle &bundle) {
     block(kReasonDuplicateProbe);
   }
 
+  // A probe is usable only when every declared dependency is also supported.
+  // Cycles add no new evidence requirement and are bounded by the probe set.
+  const auto dependencies_supported = [&](const ProbeResult &root) {
+    std::set<std::string> visited;
+    const auto check = [&](const auto &self, const ProbeResult &probe) -> bool {
+      for (const std::string &dependency_id : probe.depends_on) {
+        if (!visited.insert(dependency_id).second) {
+          continue;
+        }
+        const ProbeResult *dependency = find_probe(bundle, dependency_id);
+        if (dependency == nullptr ||
+            dependency->state != EvidenceState::supported) {
+          return false;
+        }
+        if (!self(self, *dependency)) {
+          return false;
+        }
+      }
+      return true;
+    };
+    return check(check, root);
+  };
+
   // Required canonical probes and their semantic obligations. Unknown enum
   // values, `unavailable`, `unsupported`, and `not_tested` never support.
   const auto require_probe = [&](std::string_view id) -> const ProbeResult * {
@@ -116,6 +139,10 @@ QualificationDecision evaluate(const EvidenceBundle &bundle) {
     }
     if (probe->state != EvidenceState::supported) {
       block(with_id(kReasonProbeUnsupported, id));
+      return nullptr;
+    }
+    if (!dependencies_supported(*probe)) {
+      block(with_id(kReasonDependency, id));
       return nullptr;
     }
     if (!probe->cleanup_ok) {
@@ -167,6 +194,8 @@ QualificationDecision evaluate(const EvidenceBundle &bundle) {
       fail(with_id(kReasonProbeFailed, probe.id));
     } else if (probe.state != EvidenceState::supported) {
       block(with_id(kReasonProbeUnsupported, probe.id));
+    } else if (!dependencies_supported(probe)) {
+      block(with_id(kReasonDependency, probe.id));
     }
     if (!probe.cleanup_ok) {
       fail(with_id(kReasonCleanupFailed, probe.id));
@@ -194,7 +223,8 @@ QualificationDecision evaluate(const EvidenceBundle &bundle) {
   // P3 remains bounded to operator families actually measured as supported.
   std::vector<std::string> families;
   for (const ProbeResult &probe : bundle.probes) {
-    if (probe.state != EvidenceState::supported) {
+    if (probe.state != EvidenceState::supported ||
+        !dependencies_supported(probe)) {
       continue;
     }
     for (const std::string &family : probe.tested_operator_families) {
@@ -223,6 +253,9 @@ QualificationDecision evaluate(const EvidenceBundle &bundle) {
         entry.disabled_reason = probe->reason_code.empty()
                                     ? "probe_not_supported"
                                     : probe->reason_code;
+      } else {
+        entry.allowed_shapes = probe->tested_shapes;
+        entry.allowed_precisions = probe->tested_precisions;
       }
     }
     decision.capabilities.push_back(std::move(entry));

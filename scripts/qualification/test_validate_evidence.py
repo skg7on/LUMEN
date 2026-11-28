@@ -292,6 +292,24 @@ class ValidateEvidenceTests(unittest.TestCase):
         with self.assertRaisesRegex(ve.ValidationError, "profile_hash"):
             ve.validate_manifest(manifest, require_sealed=False)
 
+    def test_unsupported_dependency_rejected(self) -> None:
+        manifest = _base_manifest()
+        manifest["probes"][0]["depends_on"] = ["missing/dependency"]
+        with self.assertRaisesRegex(ve.ValidationError,
+                                    "unsupported dependency"):
+            ve.validate_manifest(manifest, require_sealed=False)
+
+    def test_satisfied_dependency_accepted(self) -> None:
+        manifest = _base_manifest()
+        manifest["probes"][0]["depends_on"] = ["memory/kinds-and-copies"]
+        ve.validate_manifest(manifest, require_sealed=False)
+
+    def test_capability_allowed_shapes_type_checked(self) -> None:
+        manifest = _base_manifest()
+        manifest["capabilities"][0]["allowed_shapes"] = "16x16x16"
+        with self.assertRaises(ve.ValidationError):
+            ve.validate_manifest(manifest, require_sealed=False)
+
     def test_cli_exit_codes(self) -> None:
         path = self._sealed()
         self.assertEqual(ve.main([str(path), "--require-real-device"]), 0)
