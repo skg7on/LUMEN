@@ -49,6 +49,7 @@ function(lumen_apply_warnings target)
 endfunction()
 
 include(cmake/VersionMetadata.cmake)
+include(cmake/LumenQualification.cmake)
 
 # Public C ABI plus the CPU/mock adapters and shared core primitives.
 add_library(lumen STATIC

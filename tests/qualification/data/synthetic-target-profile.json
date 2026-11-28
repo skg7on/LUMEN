@@ -1,0 +1,35 @@
+{
+  "comment": "Synthetic harness fixture. Never device evidence and never a qualification claim.",
+  "schema_version": 1,
+  "source_kind": "synthetic",
+  "profile_hash": "sha256:synthetic-fixture-not-evidence",
+  "target": {
+    "vendor": "synthetic",
+    "sku": "synthetic-sku",
+    "board": "synthetic-board",
+    "board_revision": "r0",
+    "device_identifier": "synthetic-device",
+    "architecture": "arm64",
+    "os": "synthetic-linux",
+    "kernel_version": "6.1.0",
+    "firmware": "none",
+    "driver_version": "0.0.0",
+    "sdk_version": "0.0.0",
+    "runtime_version": "0.0.0",
+    "compiler_version": "synthetic-clang"
+  },
+  "limits": {
+    "host_budget_bytes": 1073741824,
+    "staging_budget_bytes": 268435456,
+    "device_budget_bytes": 2147483648,
+    "workspace_budget_bytes": 134217728,
+    "max_inflight_commands": 8,
+    "max_graphs": 16,
+    "sample_count": 1000,
+    "warmup_count": 100,
+    "per_case_timeout_ns": 30000000000,
+    "soak_duration_ns": 1800000000000,
+    "temperature_stop_celsius": 85.0,
+    "power_stop_watts": 20.0
+  }
+}

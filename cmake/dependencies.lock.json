@@ -25,5 +25,13 @@
     ],
     "note": "CTest coverage is host-only in P0; target hardware evidence belongs to the NPU qualification work item."
   },
+  "qualification_harness": {
+    "runtime_dependencies": "none",
+    "device_sdk_required_for_host_tests": false,
+    "development_only": {
+      "evidence_validator": "scripts/qualification/validate_evidence.py uses only the Python 3 standard library and is not shipped, linked, or required by the runtime or model packer"
+    },
+    "synthetic_profile": "tests/qualification/data/synthetic-target-profile.json is harness input only and is never device evidence"
+  },
   "dependencies": []
 }
