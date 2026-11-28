@@ -1,0 +1,270 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/skg7on/LUMEN/docs/qualification/p0/qualification.schema.json",
+  "title": "LUMEN P0 qualification evidence bundle",
+  "description": "Documents the evidence bundle consumed by the native evaluator and the development-only validator. The validator enforces the explicitly listed structure and cross-file invariants; this document does not claim general JSON Schema enforcement. A bundle with a synthetic source kind is never device evidence.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "target",
+    "run",
+    "limits",
+    "probes",
+    "capabilities",
+    "decision",
+    "artifacts",
+    "measurement_complete",
+    "integrity"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "target": {
+      "type": "object",
+      "required": [
+        "vendor",
+        "sku",
+        "board",
+        "board_revision",
+        "device_identifier",
+        "architecture",
+        "os",
+        "kernel_version",
+        "firmware",
+        "driver_version",
+        "sdk_version",
+        "runtime_version",
+        "compiler_version"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "vendor": { "type": "string", "minLength": 1 },
+        "sku": { "type": "string", "minLength": 1 },
+        "board": { "type": "string", "minLength": 1 },
+        "board_revision": { "type": "string", "minLength": 1 },
+        "device_identifier": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable, non-secret device identifier; never a credential."
+        },
+        "architecture": { "type": "string", "minLength": 1 },
+        "os": { "type": "string", "minLength": 1 },
+        "kernel_version": { "type": "string", "minLength": 1 },
+        "firmware": { "type": "string", "minLength": 1 },
+        "driver_version": { "type": "string", "minLength": 1 },
+        "sdk_version": { "type": "string", "minLength": 1 },
+        "runtime_version": { "type": "string", "minLength": 1 },
+        "compiler_version": { "type": "string", "minLength": 1 }
+      }
+    },
+    "run": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "run_id",
+        "started_utc",
+        "finished_utc",
+        "git_commit",
+        "git_dirty",
+        "diff_digest",
+        "compiler",
+        "linker",
+        "cmake_version",
+        "build_flags",
+        "adapter_hash",
+        "profile_hash",
+        "graph_hash",
+        "source_kind"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "schema_version": { "const": 1 },
+        "run_id": { "type": "string", "minLength": 1 },
+        "started_utc": { "type": "string", "minLength": 1 },
+        "finished_utc": { "type": "string", "minLength": 1 },
+        "git_commit": { "type": "string", "minLength": 1 },
+        "git_dirty": { "type": "boolean" },
+        "diff_digest": { "type": "string" },
+        "compiler": { "type": "string", "minLength": 1 },
+        "linker": { "type": "string", "minLength": 1 },
+        "cmake_version": { "type": "string", "minLength": 1 },
+        "build_flags": { "type": "string", "minLength": 1 },
+        "adapter_hash": { "type": "string", "minLength": 1 },
+        "profile_hash": { "type": "string", "minLength": 1 },
+        "graph_hash": { "type": "string", "minLength": 1 },
+        "source_kind": { "enum": ["real_device", "synthetic"] }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "required": [
+        "host_budget_bytes",
+        "staging_budget_bytes",
+        "device_budget_bytes",
+        "workspace_budget_bytes",
+        "max_inflight_commands",
+        "max_graphs",
+        "sample_count",
+        "warmup_count",
+        "per_case_timeout_ns",
+        "soak_duration_ns",
+        "temperature_stop_celsius",
+        "power_stop_watts",
+        "profile_hash"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "host_budget_bytes": { "type": "integer", "minimum": 1 },
+        "staging_budget_bytes": { "type": "integer", "minimum": 1 },
+        "device_budget_bytes": { "type": "integer", "minimum": 1 },
+        "workspace_budget_bytes": { "type": "integer", "minimum": 1 },
+        "max_inflight_commands": { "type": "integer", "minimum": 1 },
+        "max_graphs": { "type": "integer", "minimum": 1 },
+        "sample_count": { "type": "integer", "minimum": 1 },
+        "warmup_count": { "type": "integer", "minimum": 1 },
+        "per_case_timeout_ns": { "type": "integer", "minimum": 1 },
+        "soak_duration_ns": { "type": "integer", "minimum": 1 },
+        "temperature_stop_celsius": { "type": "number", "exclusiveMinimum": 0 },
+        "power_stop_watts": { "type": "number", "exclusiveMinimum": 0 },
+        "profile_hash": { "type": "string", "minLength": 1 }
+      }
+    },
+    "probes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "state",
+          "required",
+          "cleanup_ok",
+          "quarantine_resolved",
+          "correctness_mismatches"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "state": {
+            "enum": [
+              "supported",
+              "unsupported",
+              "unavailable",
+              "failed",
+              "not_tested"
+            ]
+          },
+          "required": { "type": "boolean" },
+          "cleanup_ok": { "type": "boolean" },
+          "quarantine_resolved": { "type": "boolean" },
+          "correctness_mismatches": { "type": "integer", "minimum": 0 },
+          "timings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "run_id",
+                "probe_id",
+                "sample_id",
+                "phase",
+                "submit_start_ns",
+                "submit_return_ns",
+                "observed_complete_ns",
+                "operation_bytes",
+                "operation_flops",
+                "final_status"
+              ],
+              "properties": {
+                "run_id": { "type": "string", "minLength": 1 },
+                "probe_id": { "type": "string", "minLength": 1 },
+                "sample_id": { "type": "integer", "minimum": 0 },
+                "phase": { "enum": ["cold", "warmup", "measured"] },
+                "submit_start_ns": { "type": "integer", "minimum": 0 },
+                "submit_return_ns": { "type": "integer", "minimum": 0 },
+                "observed_complete_ns": { "type": "integer", "minimum": 0 },
+                "operation_bytes": { "type": "integer", "minimum": 0 },
+                "operation_flops": { "type": "integer", "minimum": 0 },
+                "final_status": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["capability", "state"],
+        "additionalProperties": true,
+        "properties": {
+          "capability": { "type": "string", "minLength": 1 },
+          "state": {
+            "enum": [
+              "supported",
+              "unsupported",
+              "unavailable",
+              "failed",
+              "not_tested"
+            ]
+          },
+          "supporting_probes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "fallback_mode": { "type": "string" },
+          "disabled_reason": { "type": "string" }
+        }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "required": [
+        "overall",
+        "reason_codes",
+        "p1_eligible",
+        "p2_mode",
+        "p3_eligible_probe_families"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "overall": { "enum": ["qualified", "blocked", "failed"] },
+        "reason_codes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "p1_eligible": { "type": "boolean" },
+        "p2_mode": { "enum": ["native_paged", "gather", "no_go"] },
+        "p3_eligible_probe_families": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "limitations": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "description": "Paths are relative to the bundle root and must not escape it. SHA-256 digests are added by seal mode.",
+      "items": {
+        "type": "object",
+        "required": ["path"],
+        "additionalProperties": false,
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "size_bytes": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "measurement_complete": { "const": true },
+    "integrity": { "enum": ["pending", "verified"] }
+  },
+  "additionalProperties": true
+}

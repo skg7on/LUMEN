@@ -30,6 +30,28 @@ function(lumen_add_host_test name source)
   set_tests_properties(${name} PROPERTIES LABELS "host")
 endfunction()
 
+# SDK-free qualification support. The synthetic fixture is harness input only;
+# it is never device evidence and never a qualification claim.
+function(lumen_add_qualification_host_test name source)
+  add_executable(${name} ${source})
+  target_link_libraries(${name} PRIVATE
+    lumen_qualification_support
+    lumen_test_support
+    lumen::lumen)
+  lumen_apply_warnings(${name})
+  add_test(NAME ${name} COMMAND ${name})
+  set_tests_properties(${name} PROPERTIES LABELS "host")
+endfunction()
+
+lumen_qualification_configure_profile(
+  ${CMAKE_CURRENT_SOURCE_DIR}/qualification/data/synthetic-target-profile.json)
+lumen_add_qualification_support()
+
+lumen_add_qualification_host_test(p0-qual-profile
+  qualification/profile_test.cpp)
+lumen_add_qualification_host_test(p0-qual-decision
+  qualification/decision_test.cpp)
+
 lumen_add_host_test(unit-build-smoke unit/build_smoke_test.cpp)
 lumen_add_host_test(unit-status unit/status_test.cpp)
 lumen_add_host_test(unit-checked-math unit/checked_math_test.cpp)
